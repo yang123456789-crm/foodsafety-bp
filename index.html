@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食安慧眼 · AI食品安全智能检测平台（管理后台）</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+<style>
+  :root{ --brand:#10b981; --brand2:#0ea5e9; }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif}
+  .sidebar::-webkit-scrollbar{width:6px}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+  .nav-item{display:flex;align-items:center;gap:.65rem;padding:.55rem .75rem;border-radius:.5rem;color:#cbd5e1;font-size:.875rem;cursor:pointer;transition:all .2s}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-item.active{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;box-shadow:0 4px 14px -2px rgba(16,185,129,.5)}
+  .nav-section-title{font-size:.65rem;color:#64748b;letter-spacing:.1em;padding:0 .75rem;margin:.8rem 0 .35rem;font-weight:600}
+  .card{background:#fff;border-radius:.75rem;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);border:1px solid #f1f5f9}
+  .btn{padding:.5rem 1rem;border-radius:.5rem;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem;border:0}
+  .btn-primary{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff}
+  .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn-ghost{background:#f1f5f9;color:#475569}
+  .btn-ghost:hover{background:#e2e8f0}
+  .btn-danger{background:#fee2e2;color:#dc2626}
+  .btn-danger:hover{background:#fecaca}
+  .btn-sm{padding:.3rem .6rem;font-size:.72rem}
+  .badge{display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .55rem;border-radius:9999px;font-size:.65rem;font-weight:600;white-space:nowrap}
+  .input{padding:.5rem .7rem;border:1px solid #e2e8f0;border-radius:.5rem;font-size:.85rem;width:100%;transition:border .15s;background:#fff}
+  .input:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th{text-align:left;padding:.6rem .5rem;background:#f8fafc;color:#64748b;font-weight:600;font-size:.7rem;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  td{padding:.6rem .5rem;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle}
+  tr:hover td{background:#f8fafc}
+  .modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:50;padding:1rem}
+  .modal{background:#fff;border-radius:.75rem;width:100%;max-width:600px;max-height:92vh;overflow:auto;padding:1.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+  .toast{position:fixed;top:1.5rem;right:1.5rem;background:#1e293b;color:#fff;padding:.65rem 1rem;border-radius:.5rem;font-size:.85rem;z-index:100;box-shadow:0 10px 25px rgba(0,0,0,.2);animation:slideIn .25s ease}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+  .stat-card{background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);border:1px solid #f1f5f9;border-radius:.75rem;padding:1.1rem;position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#10b981,#0ea5e9)}
+  .tag-danger{background:#fee2e2;color:#dc2626}
+  .tag-caution{background:#fef3c7;color:#d97706}
+  .tag-safe{background:#dcfce7;color:#16a34a}
+  .tag-myth{background:#dbeafe;color:#2563eb}
+  .tag-info{background:#e0f2fe;color:#0284c7}
+  .tag-gray{background:#f1f5f9;color:#64748b}
+  .tag-g1{background:#dcfce7;color:#16a34a}
+  .tag-g2{background:#dbeafe;color:#2563eb}
+  .tag-g3{background:#fef3c7;color:#d97706}
+  .tag-g4{background:#fee2e2;color:#dc2626}
+  .chat-msg{padding:.7rem 1rem;border-radius:.85rem;max-width:82%;font-size:.85rem;line-height:1.6;word-break:break-word}
+  .chat-user{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;align-self:flex-end;border-bottom-right-radius:.2rem}
+  .chat-bot{background:#f1f5f9;color:#1e293b;align-self:flex-start;border-bottom-left-radius:.2rem}
+  .chat-bot b{color:#0f766e}
+  .empty{text-align:center;padding:3rem 1rem;color:#94a3b8;font-size:.85rem}
+  .ai-pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+  .typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#94a3b8;margin:0 1px;animation:blink 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  .chip{padding:.35rem .75rem;border-radius:9999px;font-size:.75rem;background:#fff;border:1px solid #d1fae5;color:#0f766e;cursor:pointer;transition:all .15s}
+  .chip:hover{background:#ecfdf5;border-color:#10b981}
+  .ing-tag{padding:.3rem .65rem;border-radius:.5rem;font-size:.78rem;cursor:pointer;transition:all .12s;border:1px solid #e2e8f0;background:#fff;color:#475569;user-select:none}
+  .ing-tag:hover{border-color:#10b981;color:#0f766e}
+  .ing-tag.sel{background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;border-color:transparent;box-shadow:0 3px 10px -2px rgba(16,185,129,.5)}
+  .mode-banner{position:sticky;top:0;z-index:20;padding:.35rem 1rem;font-size:.75rem;text-align:center;color:#fff;letter-spacing:.02em}
+  .mode-banner-demo{background:linear-gradient(90deg,#047857,#10b981)}
+  .sign-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:.4rem;flex-shrink:0;margin-top:.45rem}
+  .view{display:none}.view.active{display:block}
+  .log-line{font-size:.72rem;color:#94a3b8;padding:.25rem 0;border-bottom:1px dashed #f1f5f9}
+</style>
+</head>
+<body class="bg-slate-100">
+<div class="mode-banner mode-banner-demo">
+  <i class="ri-shield-check-line"></i> 食安慧眼演示环境：数据保存在本机浏览器 localStorage，知识库已内置权威食材风险数据，可离线直接演示
+</div>
+
+<div class="flex h-[calc(100vh-30px)] overflow-hidden">
+  <!-- Sidebar -->
+  <aside class="sidebar w-60 bg-gradient-to-b from-emerald-950 via-teal-950 to-slate-900 flex flex-col flex-shrink-0">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
+      <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-400/30">
+        <i class="ri-shield-check-fill text-white text-xl"></i>
+      </div>
+      <div>
+        <div class="text-white font-bold text-base leading-tight">食安慧眼</div>
+        <div class="text-slate-400 text-[10px]">AI 食品安全智能检测平台</div>
+      </div>
+    </div>
+    <nav class="flex-1 py-3 px-2 overflow-y-auto" id="nav"></nav>
+    <div class="p-3 border-t border-white/5">
+      <div class="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center text-white font-bold text-xs">管</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-white text-xs font-medium truncate">系统管理员</div>
+          <div class="text-slate-400 text-[10px] truncate">admin@foodsafety.cn</div>
+        </div>
+        <button onclick="resetData()" title="重置演示数据" class="text-slate-400 hover:text-red-400"><i class="ri-refresh-line"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0">
+      <div>
+        <h1 id="pageTitle" class="text-lg font-bold text-slate-800">数据总览</h1>
+        <p id="pageDesc" class="text-xs text-slate-500">食安慧眼系统核心运营指标</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="badge tag-safe"><span class="ai-pulse"></span> AI 引擎在线</span>
+        <span class="text-xs text-slate-400" id="liveTime"></span>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-6" id="content">
+
+      <!-- ============ 1. 数据总览 ============ -->
+      <section id="view-dashboard" class="view active">
+        <div class="grid grid-cols-4 gap-4 mb-4" id="statCards"></div>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="card col-span-2">
+            <div class="flex items-center justify-between mb-2">
+              <div class="font-semibold text-slate-800 text-sm"><i class="ri-line-chart-line text-emerald-600"></i> 近 14 日 AI 检测与风险预警趋势</div>
+              <span class="text-xs text-slate-400">单位：次</span>
+            </div>
+            <div id="chartTrend" style="height:280px"></div>
+          </div>
+          <div class="card">
+            <div class="font-semibold text-slate-800 text-sm mb-2"><i class="ri-pie-chart-line text-emerald-600"></i> 变质问题类型分布</div>
+            <div id="chartType" style="height:280px"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="card">
+            <div class="font-semibold text-slate-800 text-sm mb-2"><i class="ri-bar-chart-line text-emerald-600"></i> 食材新鲜度评级分布</div>
+            <div id="chartGrade" style="height:250px"></div>
+          </div>
+          <div class="card">
+            <div class="font-semibold text-slate-800 text-sm mb-2"><i class="ri-alarm-warning-line text-emerald-600"></i> 高风险变质食材 Top 6</div>
+            <div id="chartRank" style="height:250px"></div>
+          </div>
+          <div class="card">
+            <div class="font-semibold text-slate-800 text-sm mb-3"><i class="ri-lightbulb-flash-line text-emerald-600"></i> AI 智能洞察</div>
+            <div id="insights" class="space-y-2 text-[.8rem] text-slate-600"></div>
+          </div>
+        </div>
+
+        <!-- 知识图谱可视化 -->
+        <div class="card mt-4">
+          <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <div class="font-semibold text-slate-800 text-sm">
+              <i class="ri-share-forward-2-line text-emerald-600"></i> 食安知识图谱
+              <span class="text-xs text-slate-400 font-normal ml-1">食材分类 — 搭配风险 — 变质危害 关联网络（可拖拽 · 滚轮缩放 · 点击节点查看详情）</span>
+            </div>
+            <div class="flex gap-1.5" id="graphFilters">
+              <button class="tab-btn gfilter active" data-m="all" onclick="setGraphMode('all',this)">全部关系</button>
+              <button class="tab-btn gfilter" data-m="danger" onclick="setGraphMode('danger',this)"><span class="text-red-500">●</span> 高风险同食</button>
+              <button class="tab-btn gfilter" data-m="caution" onclick="setGraphMode('caution',this)"><span class="text-amber-500">●</span> 需注意搭配</button>
+              <button class="tab-btn gfilter" data-m="myth" onclick="setGraphMode('myth',this)"><span class="text-blue-500">●</span> 谣言辟谣</button>
+              <button class="tab-btn gfilter" data-m="spoil" onclick="setGraphMode('spoil',this)"><span class="text-rose-800">●</span> 变质关系</button>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div id="chartGraph" class="flex-1" style="height:420px;min-width:0"></div>
+            <div class="w-60 flex-shrink-0 border-l border-slate-100 pl-4 flex flex-col">
+              <div class="grid grid-cols-2 gap-2 mb-3">
+                <div class="p-2 rounded-lg bg-slate-50 text-center"><div class="text-lg font-bold text-slate-800" id="kgNodes">0</div><div class="text-[10px] text-slate-400">知识节点</div></div>
+                <div class="p-2 rounded-lg bg-slate-50 text-center"><div class="text-lg font-bold text-slate-800" id="kgEdges">0</div><div class="text-[10px] text-slate-400">关系连线</div></div>
+                <div class="p-2 rounded-lg bg-red-50 text-center"><div class="text-lg font-bold text-red-600" id="kgDanger">0</div><div class="text-[10px] text-red-400">高风险搭配</div></div>
+                <div class="p-2 rounded-lg bg-blue-50 text-center"><div class="text-lg font-bold text-blue-600" id="kgMyth">0</div><div class="text-[10px] text-blue-400">谣言条目</div></div>
+              </div>
+              <div class="text-[11px] text-slate-500 space-y-1.5 mb-3">
+                <div class="font-semibold text-slate-700 mb-1">图例</div>
+                <div><span class="inline-block w-4 h-1 rounded bg-red-500 align-middle"></span> 高风险同食（不建议）</div>
+                <div><span class="inline-block w-4 h-1 rounded bg-amber-400 align-middle"></span> 需注意（特定人群）</div>
+                <div><span class="inline-block w-4 h-1 rounded bg-blue-500 align-middle" style="border-top:2px dashed #3b82f6;height:0;background:transparent"></span> 谣言（已辟谣）</div>
+                <div><span class="inline-block w-4 h-1 rounded bg-rose-800 align-middle" style="border-top:2px dashed #9f1239;height:0;background:transparent"></span> 易发生变质类型</div>
+                <div><span class="inline-block w-4 h-1 rounded bg-slate-300 align-middle" style="border-top:2px dotted #cbd5e1;height:0;background:transparent"></span> 食材分类归属</div>
+              </div>
+              <div id="kgDetail" class="flex-1 rounded-lg bg-emerald-50/60 border border-emerald-100 p-3 text-[11px] text-slate-600 overflow-y-auto">
+                <div class="font-semibold text-emerald-700 mb-1"><i class="ri-cursor-line"></i> 节点详情</div>
+                点击图谱中的任意节点，可查看该食材关联的搭配风险与变质关系；悬停连线可查看风险说明。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 2. AI 智能体 ============ -->
+      <section id="view-ai" class="view">
+        <div class="grid grid-cols-4 gap-4 h-full">
+          <div class="card col-span-3 flex flex-col" style="height:calc(100vh - 160px)">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-sky-500 flex items-center justify-center"><i class="ri-robot-2-fill text-white"></i></div>
+                <div>
+                  <div class="font-semibold text-slate-800 text-sm flex items-center gap-2">食安 AI 智能体 <span class="badge tag-safe"><span class="ai-pulse"></span>在线</span></div>
+                  <div class="text-[11px] text-slate-400">内置食材变质识别模型 · 同食风险知识图谱 · 权威谣言辟谣库</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="clearChat()"><i class="ri-delete-bin-line"></i> 清空对话</button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4 flex flex-col gap-3" id="chatBox"></div>
+            <div class="pt-3 border-t border-slate-100">
+              <div class="flex flex-wrap gap-2 mb-2" id="chips"></div>
+              <div class="flex gap-2">
+                <input id="chatInput" class="input flex-1" placeholder="输入食材问题，如：柿子和螃蟹能一起吃吗？草莓发霉了还能吃吗？" onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="btn btn-ghost" title="模拟拍照检测" onclick="mockPhoto()"><i class="ri-camera-line"></i></button>
+                <button class="btn btn-primary" onclick="sendChat()"><i class="ri-send-plane-fill"></i> 发送</button>
+              </div>
+            </div>
+          </div>
+          <div class="card flex flex-col" style="height:calc(100vh - 160px)">
+            <div class="font-semibold text-slate-800 text-sm mb-3"><i class="ri-list-check-2 text-emerald-600"></i> 智能体能力</div>
+            <div class="space-y-3 text-[.8rem]">
+              <div class="p-3 rounded-lg bg-emerald-50/70 border border-emerald-100"><div class="font-semibold text-emerald-700 mb-1"><i class="ri-camera-2-line"></i> 智能变质检查</div><div class="text-slate-500">拍照识别果蔬/肉类霉变腐烂，输出安全评级与处置建议</div></div>
+              <div class="p-3 rounded-lg bg-sky-50/70 border border-sky-100"><div class="font-semibold text-sky-700 mb-1"><i class="ri-git-branch-line"></i> 同食风险筛查</div><div class="text-slate-500">支持 2 种及以上食材搭配，自动排查冲突组合与禁忌人群</div></div>
+              <div class="p-3 rounded-lg bg-amber-50/70 border border-amber-100"><div class="font-semibold text-amber-700 mb-1"><i class="ri-book-open-line"></i> 变质档案问答</div><div class="text-slate-500">查询食材保质期、储存方法、早中晚期变质特征</div></div>
+              <div class="p-3 rounded-lg bg-indigo-50/70 border border-indigo-100"><div class="font-semibold text-indigo-700 mb-1"><i class="ri-shield-cross-line"></i> 网络谣言辟谣</div><div class="text-slate-500">基于权威文献甄别“食物相克”谣言，给出科学解释</div></div>
+            </div>
+            <div class="mt-auto">
+              <div class="font-semibold text-slate-800 text-sm mb-2"><i class="ri-history-line text-slate-400"></i> 最近问答记录</div>
+              <div id="qaLog" class="max-h-40 overflow-y-auto"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3. 同食风险筛查 ============ -->
+      <section id="view-check" class="view">
+        <div class="card mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-semibold text-slate-800 text-sm"><i class="ri-git-branch-line text-emerald-600"></i> 选择要搭配的食材（可多选，支持 2 种及以上）</div>
+            <input class="input w-56" placeholder="搜索食材…" oninput="renderPickList(this.value)">
+          </div>
+          <div id="pickList" class="flex flex-wrap gap-2 max-h-56 overflow-y-auto"></div>
+          <div class="flex items-center gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div class="flex-1 flex flex-wrap gap-2 items-center min-h-[38px]" id="pickedTags">
+              <span class="text-xs text-slate-400">尚未选择食材</span>
+            </div>
+            <button class="btn btn-primary" onclick="runScreen()"><i class="ri-search-2-line"></i> 开始智能筛查</button>
+            <button class="btn btn-ghost" onclick="clearPick()"><i class="ri-eraser-line"></i> 清空</button>
+          </div>
+        </div>
+        <div id="screenResult"></div>
+      </section>
+
+      <!-- ============ 4. 变质检测记录 ============ -->
+      <section id="view-records" class="view">
+        <div class="card mb-4 flex items-center gap-3 flex-wrap">
+          <button class="btn btn-primary" onclick="openRecordModal()"><i class="ri-add-line"></i> 录入变质记录</button>
+          <input class="input w-52" placeholder="搜索食材/特征…" oninput="recordFilter.kw=this.value;renderRecords()">
+          <select class="input w-40" onchange="recordFilter.grade=this.value;renderRecords()">
+            <option value="">全部评级</option><option>优质</option><option>良好</option><option>轻度变质</option><option>严重变质</option>
+          </select>
+          <select class="input w-40" onchange="recordFilter.type=this.value;renderRecords()">
+            <option value="">全部变质类型</option><option>正常</option><option>霉变</option><option>腐烂软化</option><option>酸败发酵</option><option>腐败发臭</option><option>发芽/变绿</option>
+          </select>
+          <div class="ml-auto text-xs text-slate-400" id="recordCount"></div>
+        </div>
+        <div class="card p-0 overflow-hidden">
+          <table>
+            <thead><tr><th>检测时间</th><th>食材</th><th>变质类型</th><th>新鲜度评级</th><th>AI 置信度</th><th>存放环境</th><th>变质特征 / 处置建议</th><th>来源</th><th>操作</th></tr></thead>
+            <tbody id="recordTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 5. 预警中心 ============ -->
+      <section id="view-warnings" class="view">
+        <div class="grid grid-cols-4 gap-4 mb-4">
+          <div class="stat-card"><div class="text-xs text-slate-500 mb-1"><i class="ri-alarm-warning-line text-red-500"></i> 待处理预警</div><div class="text-2xl font-bold text-slate-800" id="wOpen">0</div></div>
+          <div class="stat-card"><div class="text-xs text-slate-500 mb-1"><i class="ri-checkbox-circle-line text-emerald-500"></i> 已处理</div><div class="text-2xl font-bold text-slate-800" id="wDone">0</div></div>
+          <div class="stat-card"><div class="text-xs text-slate-500 mb-1"><i class="ri-error-warning-line text-red-600"></i> 高风险预警</div><div class="text-2xl font-bold text-slate-800" id="wHigh">0</div></div>
+          <div class="stat-card"><div class="text-xs text-slate-500 mb-1"><i class="ri-shield-star-line text-emerald-600"></i> 风险拦截率</div><div class="text-2xl font-bold text-slate-800">98.6%</div></div>
+        </div>
+        <div class="card p-0 overflow-hidden">
+          <table>
+            <thead><tr><th>预警时间</th><th>级别</th><th>类型</th><th>预警内容</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="warnTbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 6. 变质档案库 ============ -->
+      <section id="view-archive" class="view">
+        <div class="card mb-4 flex items-center gap-3">
+          <input class="input w-64" placeholder="搜索食材名称，如：草莓、牛肉、牛奶…" oninput="renderArchive(this.value)">
+          <select class="input w-40" id="archiveCat" onchange="renderArchive(document.getElementById('archiveKw').value)">
+            <option value="">全部分类</option><option>蔬菜</option><option>水果</option><option>肉禽蛋</option><option>水产</option><option>奶豆制品</option><option>主食/其他</option>
+          </select>
+          <span class="text-xs text-slate-400 ml-auto">收录常见食材变质档案 <b class="text-emerald-600" id="archCount">0</b> 条，含保质期、三阶段变质特征与储存建议</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4" id="archiveGrid"></div>
+      </section>
+
+      <!-- ============ 7. 搭配禁忌库 ============ -->
+      <section id="view-pairs" class="view">
+        <div class="card mb-4 flex items-center gap-2 flex-wrap">
+          <button class="tab-btn btn btn-sm btn-ghost pair-tab active" data-lv="" onclick="filterPairs(this,'')">全部 <span id="pcAll"></span></button>
+          <button class="tab-btn btn btn-sm btn-ghost pair-tab" data-lv="danger" onclick="filterPairs(this,'danger')">🔴 高风险同食</button>
+          <button class="tab-btn btn btn-sm btn-ghost pair-tab" data-lv="caution" onclick="filterPairs(this,'caution')">🟡 需注意人群</button>
+          <button class="tab-btn btn btn-sm btn-ghost pair-tab" data-lv="myth" onclick="filterPairs(this,'myth')">🔵 谣言辟谣库</button>
+          <input class="input w-56 ml-auto" placeholder="搜索食材，如：柿子、虾…" oninput="renderPairs(this.value)">
+        </div>
+        <div class="grid grid-cols-2 gap-4" id="pairGrid"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   食安慧眼 · 管理后台  —— 数据与知识库（内置权威食品安全数据）
+   ============================================================ */
+var STORE_KEY = 'food_safety_admin_v1';
+
+/* ---------- 食材变质档案库 ---------- */
+var INGREDIENTS = [
+ {id:'spinach',name:'菠菜',cat:'蔬菜',aliases:['菠菜'],room:'1天',fridge:'3-5天',
+  early:['叶片发黄、轻微萎蔫','根部切口变褐'],
+  mid:['叶片呈水渍状、软烂','出现暗绿/黑色霉点'],
+  late:['整株黏液化、霉斑连片','散发酸腐霉味'],
+  store:'保鲜袋包裹直立冷藏，避免与苹果香蕉等释放乙烯的水果同放；建议焯水后冷冻可存 1 个月。'},
+ {id:'tomato',name:'西红柿',cat:'蔬菜',aliases:['番茄','西红柿'],room:'5-7天',fridge:'7-10天',
+  early:['表皮起皱、手感偏软','果蒂周围出现霉点'],
+  mid:['局部软烂塌陷','切开汁液浑浊发酸'],
+  late:['整果霉变流汁','明显酸馊味、酒味'],
+  store:'未成熟常温避光催熟；成熟后冷藏，勿切开放置超过 24 小时。'},
+ {id:'cucumber',name:'黄瓜',cat:'蔬菜',aliases:['黄瓜','青瓜'],room:'2-3天',fridge:'5-7天',
+  early:['两端微微发软','表皮光泽减退'],
+  mid:['表皮凹陷、出现白色黏毛','瓜瓤发黄'],
+  late:['整体软烂流水','酸臭味明显'],
+  store:'10-12℃ 冷藏最佳，避免冻伤（冰箱直吹处易出现水浸斑）。'},
+ {id:'carrot',name:'胡萝卜',cat:'蔬菜',aliases:['胡萝卜','红萝卜'],room:'7天',fridge:'15-20天',
+  early:['表皮萎蔫、失去脆度','顶端发芽'],
+  mid:['表面出现黏液、颜色变暗'],
+  late:['霉变发黑、组织海绵化','异味'],
+  store:'切掉缨叶（叶片会抽走水分），保鲜袋冷藏；勿与苹果、梨同放。'},
+ {id:'radish',name:'白萝卜',cat:'蔬菜',aliases:['白萝卜','萝卜'],room:'7天',fridge:'10-14天',
+  early:['表皮发蔫、重量变轻','切开“糠心”蜂窝状'],
+  mid:['切面出现黑筋/黑心','表皮黏液'],
+  late:['软烂霉变','酸臭味'],
+  store:'保鲜膜包裹冷藏；糠心是失水老化表现，虽可食但口感差。'},
+ {id:'potato',name:'土豆',cat:'蔬菜',aliases:['土豆','马铃薯','洋芋'],room:'15-30天',fridge:'不建议冷藏',
+  early:['表皮发芽、皮肉变绿','切开近皮处发绿'],
+  mid:['芽眼增多、绿色面积扩大','薯块发软'],
+  late:['腐烂发黑、异味'],
+  store:'阴凉干燥避光处（7-10℃），与苹果放一起可抑制发芽。',
+  warn:'⚠️ 发芽/变绿土豆含龙葵素，即使削芽去皮仍有风险，绿皮严重或味苦时必须整颗丢弃，禁止食用！'},
+ {id:'bean',name:'四季豆',cat:'蔬菜',aliases:['四季豆','扁豆','豆角'],room:'2天',fridge:'3-5天',
+  early:['豆荚出现褐色斑点','荚体萎蔫'],
+  mid:['荚体软烂、豆粒发黄'],
+  late:['霉变黏滑、异味'],
+  store:'保鲜袋冷藏；烹煮必须彻底焖熟（100℃ 以上）。',
+  warn:'⚠️ 生/半生四季豆含皂素和植物血凝素，可致恶心呕吐中毒，务必“开水焯透+充分加热”。'},
+ {id:'cabbage',name:'白菜',cat:'蔬菜',aliases:['白菜','大白菜','青菜'],room:'3-5天',fridge:'7-10天',
+  early:['外层叶片干帮发黄'],
+  mid:['叶帮基部水渍状腐烂','页面出现黑点霉'],
+  late:['整棵黏烂、霉臭味'],
+  store:'报纸包裹冷藏保湿；外层老叶可保护内层，食用时逐层剥除。'},
+ {id:'onion',name:'洋葱',cat:'蔬菜',aliases:['洋葱','葱头'],room:'30-60天',fridge:'不建议整颗冷藏',
+  early:['顶部发芽','鳞片发软'],
+  mid:['根部发霉、内部褐变'],
+  late:['整体腐烂流汁、恶臭'],
+  store:'阴凉通风干燥处悬挂保存；切开后须密封冷藏并 2 天内吃完。'},
+ {id:'sweetpotato',name:'红薯',cat:'蔬菜',aliases:['红薯','地瓜','番薯'],room:'15-20天',fridge:'不建议冷藏',
+  early:['表皮出现黑褐色斑块（黑斑病）','局部变硬凹陷'],
+  mid:['薯肉发黑发苦','软烂'],
+  late:['整薯腐烂、酒味或霉味'],
+  store:'阴凉干燥处 13-15℃ 保存；受冻后极易烂心。',
+  warn:'⚠️ 长黑斑的红薯含甘薯酮等毒素，水煮火烤都不能破坏，发黑发苦必须丢弃。'},
+ {id:'persimmon',name:'柿子',cat:'水果',aliases:['柿子','脆柿','甜柿'],room:'3-5天',fridge:'5-7天',
+  early:['软柿果皮出现黑斑','果肉过度软化'],
+  mid:['果皮凹陷、渗汁'],
+  late:['霉变长毛、发酵酒味'],
+  store:'硬柿可常温后熟，软熟后冷藏；空腹或食高蛋白食物前后 1 小时内不宜大量食用。'},
+ {id:'banana',name:'香蕉',cat:'水果',aliases:['香蕉'],room:'3-5天',fridge:'不建议（果皮发黑）',
+  early:['表皮出现褐点（“芝麻点”）'],
+  mid:['果皮大面积发黑、果肉软烂'],
+  late:['果肉发酵、酒味、开裂渗液'],
+  store:'常温悬挂保存；熟透吃不完可剥皮冷冻做奶昔/烘焙。'},
+ {id:'apple',name:'苹果',cat:'水果',aliases:['苹果'],room:'7天',fridge:'20-30天',
+  early:['表皮发皱、微软'],
+  mid:['局部褐变软烂','果心霉变'],
+  late:['整果腐烂、酒精味'],
+  store:'冷藏保湿；一个烂苹果会释放乙烯加速周围腐烂，需及时挑出。'},
+ {id:'strawberry',name:'草莓',cat:'水果',aliases:['草莓'],room:'当天',fridge:'1-2天',
+  early:['果实渗汁、失去光泽','表面发白'],
+  mid:['出现白色/灰色绒毛霉'],
+  late:['整盒霉烂、酸臭味'],
+  store:'不洗不摘蒂，透气盒冷藏，吃前再洗；霉变后整盒丢弃（菌丝已扩散至看似正常果实）。'},
+ {id:'grape',name:'葡萄',cat:'水果',aliases:['葡萄','提子'],room:'2-3天',fridge:'3-5天',
+  early:['掉粒增多、果梗褐变'],
+  mid:['果粒裂口渗汁、白色霉点'],
+  late:['酸馊味、整串霉烂'],
+  store:'不冲洗，带袋冷藏；食用时剪下果粒流水冲洗。'},
+ {id:'watermelon',name:'西瓜',cat:'水果',aliases:['西瓜'],room:'整瓜7天',fridge:'切开1-2天',
+  early:['切面汁水增多、口感变酸'],
+  mid:['切面发黏、颜色变暗'],
+  late:['异味发酵、表面产气'],
+  store:'整瓜阴凉处存放；切开必须覆保鲜膜冷藏，超过 24 小时不建议食用。'},
+ {id:'hawthorn',name:'山楂',cat:'水果',aliases:['山楂','山里红'],room:'5天',fridge:'10-15天',
+  early:['表皮皱缩'],
+  mid:['局部软烂、霉点'],
+  late:['霉变流汁、酒味'],
+  store:'鲜果冷藏；大量鞣酸，空腹及食海鲜前后不宜多食。'},
+ {id:'chicken',name:'鸡肉',cat:'肉禽蛋',aliases:['鸡肉','鸡胸肉','鸡腿'],room:'2小时',fridge:'1-2天',
+  early:['表面微黏、色泽变暗'],
+  mid:['颜色发灰、弹性变差','异味出现'],
+  late:['表面黏手拉丝','明显腐臭味'],
+  store:'0-4℃ 冷藏 1-2 天，冷冻 -18℃ 可存 3-6 个月；解冻后不可复冻。'},
+ {id:'pork',name:'猪肉',cat:'肉禽蛋',aliases:['猪肉','五花肉','瘦肉'],room:'2小时',fridge:'2-3天',
+  early:['暗红无光泽、表面微干或微黏'],
+  mid:['按压不回弹、发黏'],
+  late:['发绿变色、腐臭味'],
+  store:'冷藏 2-3 天，冷冻 3-6 个月；肉馅更易变质，冷藏不超过 1 天。'},
+ {id:'beef',name:'牛肉',cat:'肉禽蛋',aliases:['牛肉','牛腩','牛排'],room:'2小时',fridge:'2-4天',
+  early:['表面深红变褐、略有酸味'],
+  mid:['发黏、出现暗绿/灰色斑'],
+  late:['腐臭味重、黏丝明显'],
+  store:'整块冷藏 3-4 天，切片 2 天；冷冻 6-12 个月。'},
+ {id:'egg',name:'鸡蛋',cat:'肉禽蛋',aliases:['鸡蛋','蛋'],room:'7-15天',fridge:'30-45天',
+  early:['摇晃有轻微晃动感（气室变大）','蛋清变稀'],
+  mid:['蛋黄散黄、霉斑'],
+  late:['打开有臭鸡蛋味（硫化氢）','蛋壳霉黑'],
+  store:'大头朝上冷藏，存放前不要清洗（保护膜被破坏）；水浮测试：浮起即变质。'},
+ {id:'shrimp',name:'虾',cat:'水产',aliases:['虾','大虾','基围虾','鲜虾'],room:'2小时',fridge:'1天',
+  early:['虾头变黑、虾壳失去光泽'],
+  mid:['虾壳发黏、虾身松软','头尾易脱落'],
+  late:['氨味/腐臭味','虾壳发黑'],
+  store:'鲜虾当天食用；冷冻可存 3 个月，冷冻虾反复解冻会加速腐败。'},
+ {id:'crab',name:'螃蟹',cat:'水产',aliases:['螃蟹','大闸蟹','河蟹','蟹'],room:'即买即食',fridge:'当天',
+  early:['活力下降、反应迟钝'],
+  mid:['死亡（死蟹组胺快速升高）'],
+  late:['蟹壳发黏、腐臭味'],
+  store:'现蒸现吃，不食用死蟹；蒸熟后常温放置不超过 2 小时、冷藏不超过当天。',
+  warn:'⚠️ 螃蟹死后体内组氨酸迅速分解为组胺，高温也无法完全破坏，死蟹禁食！'},
+ {id:'fish',name:'鲜鱼',cat:'水产',aliases:['鱼','鲜鱼','草鱼','带鱼','鲈鱼'],room:'2小时',fridge:'1-2天',
+  early:['眼球浑浊凹陷','鱼鳃由鲜红变暗褐'],
+  mid:['鱼鳞易脱落、肉质无弹性'],
+  late:['鱼腹鼓胀、腐臭味'],
+  store:'去鳃去内脏后冷藏 1-2 天，冷冻 3-6 个月；“不新鲜的鱼”组胺升高易致过敏样中毒。'},
+ {id:'milk',name:'牛奶',cat:'奶豆制品',aliases:['牛奶','鲜奶'],room:'2小时',fridge:'开封后2-3天',
+  early:['煮沸/倒入杯中出现细小结块'],
+  mid:['明显变酸、分层'],
+  late:['胀袋、发苦、豆腐渣状'],
+  store:'未开封按包装日期冷藏；开封后密封冷藏 3 天内喝完，不可回倒原包装。'},
+ {id:'tofu',name:'豆腐',cat:'奶豆制品',aliases:['豆腐','嫩豆腐'],room:'4小时',fridge:'1-2天',
+  early:['表面发滑、豆腥味加重'],
+  mid:['发酸、表面黏液'],
+  late:['酸臭味、发黄发黏'],
+  store:'浸入清水冷藏，每日换水；盒装豆腐开封后 1 天内吃完。'},
+ {id:'soymilk',name:'豆浆',cat:'奶豆制品',aliases:['豆浆'],room:'2小时',fridge:'24小时',
+  early:['微酸'],
+  mid:['分层、出现絮状凝固'],
+  late:['酸败味、胀杯'],
+  store:'现磨豆浆煮沸后 4 小时内喝完；冷藏不超过 24 小时。',
+  warn:'⚠️ 未煮沸的生豆浆含皂素与胰蛋白酶抑制剂，“假沸”（80℃泡沫上浮）时未熟透可致中毒，需继续煮沸 5 分钟以上。'},
+ {id:'rice',name:'熟米饭',cat:'主食/其他',aliases:['米饭','熟饭','剩饭'],room:'2小时',fridge:'1-2天',
+  early:['米粒发黏、拉丝'],
+  mid:['有酸味、异味'],
+  late:['霉变、馊味'],
+  store:'煮好后 2 小时内入冷藏，再次食用必须彻底加热；蜡样芽孢杆菌污染的剩饭即使加热仍可能致吐泻。'},
+ {id:'fungus',name:'泡发木耳',cat:'主食/其他',aliases:['木耳','黑木耳','泡发木耳'],room:'泡发不超4小时',fridge:'泡发后≤24小时',
+  early:['泡发水浑浊、发黏'],
+  mid:['木耳发软无脆度、异味'],
+  late:['酸臭、表面黏液'],
+  store:'冷水泡发 1-2 小时即可，泡好后 24 小时内吃完，严禁久泡。',
+  warn:'⚠️ 木耳长时间泡发（尤其高温环境）可能滋生椰毒假单胞菌产生米酵菌酸，致死率高，泡发超时请直接丢弃！'},
+ {id:'daylily',name:'鲜黄花菜',cat:'蔬菜',aliases:['黄花菜','金针菜','鲜黄花菜'],room:'1天',fridge:'2天',
+  early:['花朵萎蔫'],
+  mid:['发黏变色'],
+  late:['腐烂异味'],
+  store:'优先选择干黄花菜；鲜品须摘除花蕊、沸水焯透后清水浸泡 2 小时再烹调。',
+  warn:'⚠️ 鲜黄花菜含秋水仙碱，在体内氧化为二秋水仙碱可致中毒，严禁直接大量炒食。'}
+];
+
+/* ---------- 食材搭配风险知识库（danger 高风险 / caution 需注意 / myth 已辟谣） ---------- */
+var PAIRS = [
+ {a:'柿子',b:'螃蟹',level:'danger',title:'鞣酸 + 高蛋白，胃柿石风险',
+  reason:'柿子（尤其未成熟涩柿）富含鞣酸，与螃蟹等高蛋白食物同食后，在胃酸作用下蛋白质与鞣酸凝结成块，易形成“胃柿石”，引起腹痛、呕吐；脾胃虚寒者同食寒凉蟹肉更易腹泻。',
+  advice:'食蟹前后 1-2 小时内避免大量吃柿子，尤其不要空腹吃未脱涩的柿子。',
+  source:'《中国居民膳食指南》科普解读 · 科普中国'},
+ {a:'柿子',b:'白酒',level:'danger',title:'鞣酸遇酒精，增加梗阻风险',
+  reason:'酒精刺激胃酸分泌，与柿子中的鞣酸、果胶反应形成黏稠凝块，显著增加胃石症与肠道梗阻风险，“柿子就酒”是临床胃柿石常见诱因。',
+  advice:'饮酒时及酒后数小时内不要吃柿子，尤其涩柿。',
+  source:'健康时报 · 三甲医院消化科科普'},
+ {a:'柿子',b:'红薯',level:'caution',title:'胃酸增多 + 鞣酸果胶凝集',
+  reason:'红薯含糖量高，会刺激胃部分泌大量胃酸；与柿子中的鞣酸、果胶相遇易凝聚成块，空腹同食时胃部不适风险升高。',
+  advice:'两者间隔 2 小时以上食用，胃炎、胃酸过多人群尽量避免同食。',
+  source:'科普中国食品安全专栏'},
+ {a:'虾',b:'啤酒',level:'caution',title:'高嘌呤 + 酒精，诱发痛风',
+  reason:'虾蟹贝等海鲜与啤酒同属高嘌呤食物，酒精还会抑制尿酸排泄，二者同食使血尿酸骤升，是痛风急性发作的经典诱因。',
+  advice:'高尿酸/痛风患者严禁海鲜配啤酒；健康人群也应适量、多饮水。',
+  source:'中华医学会风湿病学分会 · 痛风防治指南'},
+ {a:'菠菜',b:'豆腐',level:'caution',title:'草酸影响钙吸收（可破解）',
+  reason:'菠菜含大量草酸，与豆腐中的钙结合形成不溶性草酸钙，降低钙吸收率，长期大量同食对结石体质人群不友好。',
+  advice:'菠菜先沸水焯 30-60 秒可去除 70% 以上草酸，焯水后与豆腐同炖（如菠菜豆腐汤）可放心食用。',
+  source:'中国营养学会 · 食物营养成分科普'},
+ {a:'山楂',b:'鲜鱼',level:'caution',title:'鞣酸蛋白凝固，不易消化',
+  reason:'山楂鞣酸含量高，与鱼、虾等高蛋白食物同食会形成鞣酸蛋白，增加胃肠负担，易致便秘、腹胀腹痛。',
+  advice:'餐前饭后少量山楂助消化即可，避免空腹大量吃山楂或与海鲜同食。',
+  source:'科普中国'},
+ {a:'浓茶',b:'猪肉',level:'caution',title:'鞣酸抑制铁吸收',
+  reason:'浓茶中鞣酸与肉类中的铁结合形成难溶物质，长期餐中/餐后立即饮浓茶会降低铁吸收，贫血人群风险更明显。',
+  advice:'正餐前后 1 小时内不喝浓茶；缺铁性贫血人群尤其注意。',
+  source:'中国营养学会 · 膳食铁吸收科普'},
+ {a:'豆浆',b:'鸡蛋',level:'caution',title:'风险来自“未煮熟”而非搭配',
+  reason:'生豆浆含胰蛋白酶抑制剂和皂素，未彻底煮沸时与鸡蛋同食会影响蛋白质消化并可能引起恶心呕吐；完全煮熟的豆浆与鸡蛋同食没有问题。',
+  advice:'豆浆必须煮沸并维持 5 分钟（警惕“假沸”泡沫），熟透后可与鸡蛋放心搭配（经典早餐组合）。',
+  source:'国家食品安全风险评估中心科普'},
+ {a:'黄瓜',b:'西红柿',level:'caution',title:'维生素 C 分解酶损失营养',
+  reason:'黄瓜含维生素 C 分解酶，与西红柿、辣椒等高维C食材生食凉拌时会破坏部分维生素 C，降低营养价值（对健康无害）。',
+  advice:'在意营养可将黄瓜炒熟（酶遇热失活）后同食；或者间隔食用，无需过度担心。',
+  source:'中国营养学会'},
+ {a:'白酒',b:'咖啡',level:'caution',title:'咖啡因掩盖醉酒，加重心脏负担',
+  reason:'咖啡因的兴奋作用会掩盖酒精的困倦感，让人“不自觉喝多”；二者同饮还会刺激血管扩张、加重心脏负担。',
+  advice:'饮酒时不要用咖啡/浓茶“解酒提神”，多喝水、充分休息。',
+  source:'世界卫生组织酒精健康提示'},
+ {a:'牛奶',b:'巧克力',level:'caution',title:'草酸 + 钙，影响吸收',
+  reason:'巧克力含草酸，与牛奶中钙结合成草酸钙，长期大量同食影响钙吸收；偶尔食用无碍。',
+  advice:'无需刻意避免，儿童补钙期间不把巧克力奶当日常奶即可。',
+  source:'食品营养学科普'},
+ {a:'牛肉',b:'栗子',level:'caution',title:'同食不易消化',
+  reason:'栗子淀粉含量高且易胀气，与牛肉大量同食会延长胃排空时间，消化功能弱者易腹胀；同炖时栗子中的维生素也易被破坏。',
+  advice:'板栗炖肉可吃但别过量，老人小孩浅尝即可。',
+  source:'传统饮食宜忌现代营养学解读'},
+ {a:'羊肉',b:'西瓜',level:'caution',title:'寒热刺激，脾胃弱者易腹泻',
+  reason:'羊肉性温、西瓜寒凉，大量同食对胃肠形成冷热刺激，脾胃虚寒人群容易腹痛腹泻，并非“中毒”。',
+  advice:'吃完火锅别立刻大量吃冰西瓜，间隔半小时以上、适量即可。',
+  source:'三甲医院消化科科普'},
+ {a:'虾',b:'维生素C',level:'myth',title:'“海鲜 + 维C = 砒霜”纯属谣言',
+  reason:'传言称海鲜五价砷遇维生素C还原为三价砷（砒霜）。实测需一次性吃下上百斤虾并摄入巨量维C才可能达到中毒剂量，正常饮食完全不可能。',
+  advice:'柠檬虾、番茄虾等菜品可放心食用；服用大剂量维C补剂（克级）时避免同时大量海鲜即可。',
+  source:'中国营养学会 · 央视“3·15”辟谣 · 科普中国'},
+ {a:'鸡蛋',b:'糖精',level:'myth',title:'“鸡蛋加糖精致中毒”无科学依据',
+  reason:'该说法源自早年个案误传，糖精化学性质稳定，与鸡蛋同煮不会产生剧毒物质；且糖精钠在我国已不得用于食品生产经营。',
+  advice:'不信谣不传谣；控制添加糖摄入才是真正需要关注的健康点。',
+  source:'国家市场监督管理总局食品安全辟谣'},
+ {a:'洋葱',b:'蜂蜜',level:'myth',title:'“洋葱加蜂蜜伤眼睛”无证据',
+  reason:'洋葱含硫化物、蜂蜜主要是糖，二者同食不会损伤眼睛或致盲，适量同食无任何毒性反应。',
+  advice:'可正常搭配（如蜂蜜凉拌洋葱），糖尿病患者注意蜂蜜总量。',
+  source:'科普中国辟谣平台'},
+ {a:'鸡肉',b:'芝麻',level:'myth',title:'“鸡肉配芝麻中毒死亡”纯属谣言',
+  reason:'芝麻鸡、芝麻炸鸡是常见菜式，二者成分不存在有毒反应，该说法毫无科学依据。',
+  advice:'放心食用，注意鸡肉彻底煮熟即可。',
+  source:'中国互联网联合辟谣平台'},
+ {a:'牛奶',b:'橙子',level:'myth',title:'“果汁遇牛奶结块=不消化”是误区',
+  reason:'牛奶蛋白遇酸絮凝是正常现象（与进入胃里遇胃酸完全相同），絮凝后的蛋白反而更易被消化，不会导致结石或中毒。',
+  advice:'橙香奶昔、水果燕麦奶均可放心食用；乳糖不耐受者请选低乳糖奶。',
+  source:'中国营养学会'},
+ {a:'土豆',b:'鸡蛋',level:'myth',title:'“土豆鸡蛋一起吃中毒”无依据',
+  response:'',
+  reason:'土豆（非发芽变绿）与鸡蛋同食无任何有毒反应，土豆炖蛋、土豆鸡蛋饼是普遍家常菜；真正危险的是发芽变绿土豆本身含龙葵素。',
+  advice:'正常土豆与鸡蛋可放心搭配；发芽发绿土豆整颗丢弃。',
+  source:'中国互联网联合辟谣平台'},
+ {a:'梨',b:'螃蟹',level:'myth',title:'“梨和蟹同食致腹泻”被夸大',
+  reason:'梨水分大、膳食纤维多，蟹肉高蛋白，暴饮暴食或食材不新鲜才是腹泻主因；适量同食、蟹肉蒸熟煮透即可，不存在相克毒素。',
+  advice:'控制食量、避免冰镇梨配大量蟹，肠胃敏感者间隔食用。',
+  source:'科信食品与健康信息交流中心辟谣'},
+ {a:'芒果',b:'大蒜',level:'myth',title:'“芒果加辛辣伤肾/皮肤发黄”无依据',
+  reason:'芒果胡萝卜素含量高，短期大量食用可能出现“橘黄症”（停食即消退），与大蒜等辛辣食物同食不会伤肾或中毒。',
+  advice:'芒果每日 1-2 个为宜；过敏体质者注意芒果本身是常见过敏原。',
+  source:'科普中国'},
+ {a:'皮蛋',b:'红糖',level:'myth',title:'“皮蛋加红糖中毒”无科学依据',
+  reason:'红糖主要成分是蔗糖，与皮蛋同食不会发生有毒反应；需注意的是传统皮蛋含铅，应选购无铅皮蛋且儿童少吃。',
+  advice:'选无铅皮蛋、适量食用即可，不必担心与红糖同食。',
+  source:'中国互联网联合辟谣平台'}
+];
+
+/* ---------- 变质类型 ---------- */
+var SPOIL_TYPES = ['正常','霉变','腐烂软化','酸败发酵','腐败发臭','发芽/变绿'];
+var GRADES = ['优质','良好','轻度变质','严重变质'];
+var GRADE_ADVICE = {
+ '优质':'食材状态良好，可放心食用',
+ '良好':'基本可食，建议尽快食用并充分加热',
+ '轻度变质':'削除变质部分后高温处理，若变质面积超过 1/3 建议丢弃',
+ '严重变质':'立即丢弃，严禁食用；接触后洗手并清洁容器'
+};
+
+/* ============================================================
+   数据初始化（localStorage）
+   ============================================================ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function fmtDate(d){var p=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function dayStr(offset){var d=new Date();d.setDate(d.getDate()-offset);var p=n=>(n<10?'0':'')+n;return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+
+function seedData(){
+  var rnd = mulberry32(20260909);
+  var records = [];
+  var rid = 1;
+  for(var day=13;day>=0;day--){
+    var n = 2 + Math.floor(rnd()*3);
+    for(var k=0;k<n;k++){
+      var ing = INGREDIENTS[Math.floor(rnd()*INGREDIENTS.length)];
+      var r = rnd();
+      var grade = r<0.42?'优质':r<0.78?'良好':r<0.93?'轻度变质':'严重变质';
+      var type = '正常';
+      if(grade==='轻度变质') type = ['霉变','腐烂软化','酸败发酵','腐败发臭','发芽/变绿'][Math.floor(rnd()*5)];
+      if(grade==='严重变质') type = ['霉变','腐烂软化','腐败发臭','酸败发酵'][Math.floor(rnd()*4)];
+      var fridge = ['chicken','pork','beef','egg','shrimp','crab','fish','milk','tofu','soymilk','strawberry','grape'].indexOf(ing.id)>=0;
+      var d = new Date(); d.setDate(d.getDate()-day); d.setHours(8+Math.floor(rnd()*12), Math.floor(rnd()*60));
+      var signs = '';
+      if(grade==='严重变质') signs = ing.late[Math.floor(rnd()*ing.late.length)];
+      else if(grade==='轻度变质') signs = ing.mid[Math.floor(rnd()*ing.mid.length)];
+      else if(grade==='良好') signs = ing.early[Math.floor(rnd()*ing.early.length)];
+      else signs = '外观色泽正常，无异味';
+      records.push({
+        id:rid++, time:fmtDate(d), ingredient:ing.name, cat:ing.cat,
+        type:type, grade:grade,
+        confidence: (grade==='优质'?92+Math.floor(rnd()*7):grade==='良好'?86+Math.floor(rnd()*9):grade==='轻度变质'?83+Math.floor(rnd()*10):88+Math.floor(rnd()*11)),
+        temp: fridge?(2+Math.floor(rnd()*5))+'℃':(18+Math.floor(rnd()*10))+'℃',
+        humidity: (45+Math.floor(rnd()*40))+'%',
+        days: 1+Math.floor(rnd()*(fridge?5:8)),
+        signs:signs, advice:GRADE_ADVICE[grade],
+        source: rnd()<0.6?'小程序拍照识别':'人工抽检录入'
+      });
+    }
+  }
+  // 三条重点案例
+  var d0=new Date(); d0.setHours(d0.getHours()-2);
+  records.push({id:rid++,time:fmtDate(d0),ingredient:'草莓',cat:'水果',type:'霉变',grade:'严重变质',confidence:97,
+    temp:'4℃',humidity:'82%',days:4,signs:'整盒果实表面白色绒毛霉连片，伴随酸臭渗汁',advice:GRADE_ADVICE['严重变质'],source:'小程序拍照识别'});
+  var d1=new Date(); d1.setDate(d1.getDate()-1); d1.setHours(19,12);
+  records.push({id:rid++,time:fmtDate(d1),ingredient:'螃蟹',cat:'水产',type:'腐败发臭',grade:'严重变质',confidence:95,
+    temp:'常温',humidity:'60%',days:0,signs:'河蟹死亡超过2小时，蟹壳发黏、氨味明显',advice:'死蟹禁食，立即无害化丢弃',source:'人工抽检录入'});
+  var d2=new Date(); d2.setDate(d2.getDate()-2); d2.setHours(10,5);
+  records.push({id:rid++,time:fmtDate(d2),ingredient:'土豆',cat:'蔬菜',type:'发芽/变绿',grade:'轻度变质',confidence:91,
+    temp:'常温避光',humidity:'55%',days:20,signs:'3处芽眼萌发、表皮约1/4变绿',advice:'绿色严重/味苦必须整颗丢弃，本次建议不再食用',source:'小程序拍照识别'});
+  records.sort((a,b)=>b.time.localeCompare(a.time));
+
+  var warnings = [
+   {id:1,time:fmtDate(d0),level:'高',type:'霉变预警',content:'用户上传草莓照片，AI 判定严重霉变（置信度97%），已推送“整盒丢弃”安全建议',status:'待处理'},
+   {id:2,time:fmtDate(d1),level:'高',type:'有毒食材预警',content:'抽检发现死亡河蟹在售/储存，死蟹组胺超标风险，已预警拦截',status:'已处理'},
+   {id:3,time:fmtDate(d2),level:'中',type:'龙葵素预警',content:'库存土豆发芽变绿，AI 图像识别命中发芽特征，建议整颗丢弃',status:'待处理'},
+   {id:4,time:dayStr(1)+' 09:20',level:'中',type:'储存温度异常',content:'留样冰箱温度升至 8.6℃（阈值 6℃），持续 40 分钟，已通知管理员',status:'已处理'},
+   {id:5,time:dayStr(2)+' 15:41',level:'低',type:'谣言查询提醒',content:'24小时内 23 次查询“虾+维生素C”，AI 已自动推送科学辟谣内容',status:'已处理'},
+   {id:6,time:dayStr(3)+' 12:08',level:'中',type:'泡发超时预警',content:'用户记录木耳泡发 12 小时，AI 推送米酵菌酸风险提示并建议丢弃',status:'已处理'},
+   {id:7,time:dayStr(5)+' 18:33',level:'低',type:'临期提醒',content:'冷藏区牛奶 6 盒临近保质期（剩 1 天），已建议降价处理或下架',status:'待处理'}
+  ];
+  return {records:records, warnings:warnings, qaCount:0, qaLog:[], picked:[]};
+}
+var DATA = (function(){
+  try{var s=localStorage.getItem(STORE_KEY); if(s) return JSON.parse(s)}catch(e){}
+  var d = seedData(); localStorage.setItem(STORE_KEY, JSON.stringify(d)); return d;
+})();
+function save(){ try{localStorage.setItem(STORE_KEY, JSON.stringify(DATA))}catch(e){} }
+function resetData(){
+  if(!confirm('确定重置全部演示数据吗？')) return;
+  DATA = seedData(); save(); location.reload();
+}
+
+/* ============================================================
+   导航
+   ============================================================ */
+var NAV = [
+ {sec:'运营总览'},
+ {id:'dashboard',icon:'ri-dashboard-line',t:'数据总览',d:'食安慧眼系统核心运营指标'},
+ {sec:'AI 中心'},
+ {id:'ai',icon:'ri-robot-2-line',t:'AI 智能体',d:'智能变质检查与食品安全问答'},
+ {sec:'智能工具'},
+ {id:'check',icon:'ri-git-branch-line',t:'同食风险筛查',d:'多种食材搭配冲突智能排查'},
+ {sec:'检测管理'},
+ {id:'records',icon:'ri-file-list-3-line',t:'变质检测记录',d:'AI 识别与人工抽检记录台账'},
+ {id:'warnings',icon:'ri-alarm-warning-line',t:'预警中心',d:'风险预警与处理跟踪'},
+ {sec:'知识库'},
+ {id:'archive',icon:'ri-book-2-line',t:'变质档案库',d:'常见食材变质特征与保质期档案'},
+ {id:'pairs',icon:'ri-shield-cross-line',t:'搭配禁忌库',d:'同食风险条目与谣言辟谣库'}
+];
+var charts = {};
+function renderNav(){
+  var html='';
+  NAV.forEach(n=>{
+    if(n.sec){html+='<div class="nav-section-title">'+n.sec+'</div>';return;}
+    html+='<div class="nav-item" data-v="'+n.id+'" onclick="showView(\''+n.id+'\')"><i class="'+n.icon+'"></i> '+n.t+'</div>';
+  });
+  document.getElementById('nav').innerHTML=html;
+}
+function showView(id){
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.v===id));
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  var n=NAV.find(x=>x.id===id);
+  document.getElementById('pageTitle').textContent=n.t;
+  document.getElementById('pageDesc').textContent=n.d;
+  if(id==='dashboard') setTimeout(initCharts,60);
+  if(id==='records') renderRecords();
+  if(id==='warnings') renderWarnings();
+  if(id==='archive') renderArchive('');
+  if(id==='pairs') renderPairs('');
+  if(id==='check'){renderPickList('');renderPicked();}
+}
+
+/* ============================================================
+   通用
+   ============================================================ */
+function toast(msg){
+  var t=document.createElement('div');t.className='toast';t.innerHTML='<i class="ri-check-line"></i> '+msg;
+  document.getElementById('toastRoot').appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+function gradeBadge(g){
+  var cls = g==='优质'?'tag-g1':g==='良好'?'tag-g2':g==='轻度变质'?'tag-g3':'tag-g4';
+  var icon = g==='优质'?'ri-checkbox-circle-fill':g==='良好'?'ri-thumb-up-fill':g==='轻度变质'?'ri-alert-fill':'ri-close-circle-fill';
+  return '<span class="badge '+cls+'"><i class="'+icon+'"></i>'+g+'</span>';
+}
+function levelBadge(lv){
+  if(lv==='danger') return '<span class="badge tag-danger"><i class="ri-close-circle-fill"></i> 高风险 · 不建议同食</span>';
+  if(lv==='caution') return '<span class="badge tag-caution"><i class="ri-alert-fill"></i> 需注意 · 特定人群</span>';
+  if(lv==='myth') return '<span class="badge tag-myth"><i class="ri-shield-cross-fill"></i> 谣言 · 已科学辟谣</span>';
+  return '<span class="badge tag-safe"><i class="ri-checkbox-circle-fill"></i> 未发现冲突 · 可安全同食</span>';
+}
+
+/* ============================================================
+   1. 数据总览
+   ============================================================ */
+function renderStats(){
+  var severe = DATA.records.filter(r=>r.grade==='严重变质').length;
+  var open = DATA.warnings.filter(w=>w.status==='待处理').length;
+  var cards = [
+    {i:'ri-camera-2-line',c:'from-emerald-400 to-teal-500',n:DATA.records.length,t:'累计 AI 检测次数',s:'近14日 '+DATA.records.filter(r=>r.time>=dayStr(13)).length+' 次'},
+    {i:'ri-alarm-warning-line',c:'from-rose-400 to-red-500',n:severe+open,t:'风险预警 / 严重变质',s:'高风险拦截率 98.6%'},
+    {i:'ri-book-2-line',c:'from-sky-400 to-blue-500',n:INGREDIENTS.length+' + '+PAIRS.length,t:'知识库收录（食材档案/搭配条目）',s:'谣言辟谣库 '+PAIRS.filter(p=>p.level==='myth').length+' 条'},
+    {i:'ri-robot-2-line',c:'from-violet-400 to-purple-500',n:DATA.qaCount,t:'AI 智能体问答次数',s:'平均响应 0.8 秒'}
+  ];
+  document.getElementById('statCards').innerHTML = cards.map(c=>
+    '<div class="stat-card"><div class="flex items-start justify-between"><div><div class="text-xs text-slate-500 mb-1">'+c.t+'</div>'+
+    '<div class="text-2xl font-bold text-slate-800">'+c.n+'</div><div class="text-[11px] text-slate-400 mt-1">'+c.s+'</div></div>'+
+    '<div class="w-10 h-10 rounded-xl bg-gradient-to-br '+c.c+' flex items-center justify-center text-white text-lg"><i class="'+c.i+'"></i></div></div></div>'
+  ).join('');
+  // 洞察
+  var byType={}; DATA.records.forEach(r=>{if(r.type!=='正常')byType[r.type]=(byType[r.type]||0)+1});
+  var topType=Object.entries(byType).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+  var straw=DATA.records.filter(r=>r.ingredient==='草莓').length;
+  var mythCount=PAIRS.filter(p=>p.level==='myth').length;
+  document.getElementById('insights').innerHTML=[
+    '<div class="p-2.5 rounded-lg bg-rose-50 border border-rose-100"><i class="ri-error-warning-line text-rose-500"></i> <b>“'+topType[0]+'”</b>为近期最高发变质类型（'+topType[1]+' 次），建议加强该类食材入库抽检。</div>',
+    '<div class="p-2.5 rounded-lg bg-amber-50 border border-amber-100"><i class="ri-alert-line text-amber-500"></i> 浆果类（草莓/葡萄）货架期仅 1-2 天，'+straw+' 次检测中霉变占比高，建议小批量高频补货。</div>',
+    '<div class="p-2.5 rounded-lg bg-sky-50 border border-sky-100"><i class="ri-shield-cross-line text-sky-500"></i> 已内置 '+mythCount+' 条“食物相克”谣言辟谣，AI 问答可自动甄别网络不实信息。</div>',
+    '<div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100"><i class="ri-lightbulb-line text-emerald-600"></i> 建议：冷藏区温度统一控制在 0-4℃，叶菜与水果分柜存放可减少乙烯催熟损耗。</div>'
+  ].join('');
+}
+function initCharts(){
+  renderStats();
+  var base={color:['#10b981','#0ea5e9','#f59e0b','#ef4444','#8b5cf6','#ec4899'],textStyle:{fontFamily:'inherit'}};
+  // 趋势
+  var days=[],det=[],warn=[];
+  for(var i=13;i>=0;i--){days.push(dayStr(i).slice(5));det.push(0);warn.push(0)}
+  DATA.records.forEach(r=>{var k=r.time.slice(5,10);var idx=days.indexOf(k);if(idx>=0)det[idx]++});
+  DATA.warnings.forEach(w=>{var k=w.time.slice(5,10);var idx=days.indexOf(k);if(idx>=0)warn[idx]++});
+  if(charts.trend)charts.trend.dispose();
+  charts.trend=echarts.init(document.getElementById('chartTrend'));
+  charts.trend.setOption({...base,grid:{left:40,right:20,top:40,bottom:30},tooltip:{trigger:'axis'},
+   legend:{data:['AI检测次数','风险预警次数'],top:0,textStyle:{fontSize:11}},
+   xAxis:{type:'category',data:days,axisLine:{lineStyle:{color:'#e2e8f0'}},axisLabel:{color:'#94a3b8',fontSize:10}},
+   yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}},axisLabel:{color:'#94a3b8',fontSize:10}},
+   series:[
+    {name:'AI检测次数',type:'line',smooth:true,data:det,lineStyle:{width:3,color:'#10b981'},itemStyle:{color:'#10b981'},
+     areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(16,185,129,.35)'},{offset:1,color:'rgba(16,185,129,.02)'}])},symbolSize:6},
+    {name:'风险预警次数',type:'line',smooth:true,data:warn,lineStyle:{width:3,color:'#ef4444'},itemStyle:{color:'#ef4444'},
+     areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(239,68,68,.3)'},{offset:1,color:'rgba(239,68,68,.02)'}])},symbolSize:6}
+   ]});
+  // 变质类型 donut
+  var tc={};DATA.records.forEach(r=>{if(r.type!=='正常')tc[r.type]=(tc[r.type]||0)+1});
+  if(charts.type)charts.type.dispose();
+  charts.type=echarts.init(document.getElementById('chartType'));
+  charts.type.setOption({...base,tooltip:{trigger:'item',formatter:'{b}: {c} 次 ({d}%)'},
+   legend:{bottom:0,textStyle:{fontSize:10},itemWidth:10,itemHeight:10},
+   series:[{type:'pie',radius:['45%','70%'],center:['50%','44%'],avoidLabelOverlap:true,
+     itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},
+     label:{show:false},data:Object.entries(tc).map(([k,v])=>({name:k,value:v}))}]});
+  // 评级 bar
+  var gc={'优质':0,'良好':0,'轻度变质':0,'严重变质':0};DATA.records.forEach(r=>gc[r.grade]++);
+  if(charts.grade)charts.grade.dispose();
+  charts.grade=echarts.init(document.getElementById('chartGrade'));
+  charts.grade.setOption({...base,grid:{left:36,right:16,top:20,bottom:30},tooltip:{trigger:'axis'},
+   xAxis:{type:'category',data:Object.keys(gc),axisLabel:{color:'#64748b',fontSize:10,interval:0},axisLine:{lineStyle:{color:'#e2e8f0'}}},
+   yAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}},axisLabel:{color:'#94a3b8',fontSize:10}},
+   series:[{type:'bar',data:[
+     {value:gc['优质'],itemStyle:{color:'#22c55e',borderRadius:[6,6,0,0]}},
+     {value:gc['良好'],itemStyle:{color:'#3b82f6',borderRadius:[6,6,0,0]}},
+     {value:gc['轻度变质'],itemStyle:{color:'#f59e0b',borderRadius:[6,6,0,0]}},
+     {value:gc['严重变质'],itemStyle:{color:'#ef4444',borderRadius:[6,6,0,0]}}],
+     barWidth:'52%',label:{show:true,position:'top',color:'#64748b',fontSize:11}}]});
+  // 高风险食材排行
+  var ic={};DATA.records.forEach(r=>{if(r.grade==='轻度变质'||r.grade==='严重变质')ic[r.ingredient]=(ic[r.ingredient]||0)+1});
+  var rank=Object.entries(ic).sort((a,b)=>a[1]-b[1]).slice(-6);
+  if(charts.rank)charts.rank.dispose();
+  charts.rank=echarts.init(document.getElementById('chartRank'));
+  charts.rank.setOption({...base,grid:{left:70,right:30,top:10,bottom:20},tooltip:{trigger:'axis'},
+   xAxis:{type:'value',splitLine:{lineStyle:{color:'#f1f5f9'}},axisLabel:{color:'#94a3b8',fontSize:10}},
+   yAxis:{type:'category',data:rank.map(r=>r[0]),axisLabel:{color:'#64748b',fontSize:11},axisLine:{show:false}},
+   series:[{type:'bar',data:rank.map(r=>r[1]),barWidth:'55%',
+     itemStyle:{borderRadius:[0,6,6,0],color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#fca5a5'},{offset:1,color:'#ef4444'}])},
+     label:{show:true,position:'right',color:'#ef4444',fontSize:11}}]});
+  initGraph();
+  window.addEventListener('resize',()=>Object.values(charts).forEach(c=>c&&c.resize()));
+}
+
+/* ============================================================
+   1.5 食安知识图谱（ECharts 力导向关系图）
+   数据契约：nodes{id,name,cat,kind} / links{source,target,kind,...}
+   ============================================================ */
+var KG_CATS=[
+ {name:'蔬菜类',color:'#22c55e'},
+ {name:'水果类',color:'#f97316'},
+ {name:'肉禽蛋类',color:'#ef4444'},
+ {name:'水产类',color:'#0ea5e9'},
+ {name:'奶豆制品类',color:'#8b5cf6'},
+ {name:'主食/其他类',color:'#64748b'},
+ {name:'饮品/补剂',color:'#ec4899'},
+ {name:'变质危害',color:'#9f1239'}
+];
+/* 搭配库中非档案食材的归类 */
+var EXTRA_CAT={'啤酒':'饮品/补剂','白酒':'饮品/补剂','浓茶':'饮品/补剂','咖啡':'饮品/补剂','维生素C':'饮品/补剂','糖精':'饮品/补剂','巧克力':'饮品/补剂','蜂蜜':'饮品/补剂','红糖':'饮品/补剂','大蒜':'蔬菜类','栗子':'主食/其他类','橙子':'水果类','皮蛋':'肉禽蛋类','芝麻':'主食/其他类'};
+/* 食材 → 典型变质危害 关系（取自变质档案库） */
+var SPOIL_LINKS=[
+ {food:'草莓',hazard:'霉变',label:'白毛霉连片·整盒丢弃'},
+ {food:'土豆',hazard:'发芽/变绿',label:'龙葵素风险·整颗丢弃'},
+ {food:'红薯',hazard:'霉变',label:'黑斑病毒素·烧煮不破坏'},
+ {food:'螃蟹',hazard:'腐败发臭',label:'死蟹组胺·禁食'},
+ {food:'虾',hazard:'腐败发臭',label:'虾头发黑·组胺升高'},
+ {food:'牛奶',hazard:'酸败发酵',label:'胀袋结块变酸'},
+ {food:'豆腐',hazard:'酸败发酵',label:'表面发黏发酸'},
+ {food:'菠菜',hazard:'腐烂软化',label:'水渍状软烂霉点'}
+];
+function kgCatOf(name){
+  var ing=INGREDIENTS.find(i=>i.name===name);
+  if(ing){
+    var map={'蔬菜':'蔬菜类','水果':'水果类','肉禽蛋':'肉禽蛋类','水产':'水产类','奶豆制品':'奶豆制品类','主食/其他':'主食/其他类'};
+    return map[ing.cat]||'主食/其他类';
+  }
+  return EXTRA_CAT[name]||'饮品/补剂';
+}
+function kgColor(catName){var c=KG_CATS.find(c=>c.name===catName);return c?c.color:'#94a3b8';}
+function buildKG(){
+  var nodes={},links=[];
+  var foodSet={};
+  PAIRS.forEach(p=>{foodSet[p.a]=1;foodSet[p.b]=1;});
+  SPOIL_LINKS.forEach(s=>{foodSet[s.food]=1;});
+  /* 分类枢纽节点 */
+  var catSet={};
+  Object.keys(foodSet).forEach(f=>{catSet[kgCatOf(f)]=1;});
+  Object.keys(catSet).forEach(c=>{
+    nodes['hub_'+c]={id:'hub_'+c,name:c.replace('类',''),cat:c,kind:'hub',symbolSize:50,
+      itemStyle:{color:kgColor(c),shadowBlur:10,shadowColor:kgColor(c)+'55'},
+      label:{show:true,position:'inside',fontSize:11,fontWeight:'bold',color:'#fff'}};
+  });
+  /* 食材节点 */
+  Object.keys(foodSet).forEach(f=>{
+    var c=kgCatOf(f);
+    nodes[f]={id:f,name:f,cat:c,kind:'food',symbolSize:25,
+      itemStyle:{color:'#fff',borderColor:kgColor(c),borderWidth:2.5},
+      label:{show:true,position:'bottom',fontSize:11,color:'#334155'}};
+    links.push({source:'hub_'+c,target:f,kind:'member'});
+  });
+  /* 变质危害节点 */
+  var hzSet={};
+  SPOIL_LINKS.forEach(s=>hzSet[s.hazard]=1);
+  Object.keys(hzSet).forEach(h=>{
+    nodes['hz_'+h]={id:'hz_'+h,name:h,cat:'变质危害',kind:'hazard',symbolSize:46,
+      itemStyle:{color:'#9f1239',shadowBlur:10,shadowColor:'rgba(159,18,57,.3)'},
+      label:{show:true,position:'inside',fontSize:10,fontWeight:'bold',color:'#fff'}};
+  });
+  SPOIL_LINKS.forEach(s=>{
+    links.push({source:s.food,target:'hz_'+s.hazard,kind:'spoil',label:s.label,food:s.food,hazard:s.hazard});
+  });
+  /* 搭配风险边 */
+  PAIRS.forEach(p=>{
+    links.push({source:p.a,target:p.b,kind:p.level,title:p.title,reason:p.reason,advice:p.advice});
+  });
+  return {nodes:Object.values(nodes),links:links};
+}
+var KG=null, graphMode='all';
+function initGraph(){
+  KG=buildKG();
+  document.getElementById('kgNodes').textContent=KG.nodes.length;
+  document.getElementById('kgEdges').textContent=KG.links.length;
+  document.getElementById('kgDanger').textContent=PAIRS.filter(p=>p.level==='danger').length;
+  document.getElementById('kgMyth').textContent=PAIRS.filter(p=>p.level==='myth').length;
+  renderGraph();
+}
+function kgEdgeStyle(kind){
+  if(kind==='danger')return{color:'#ef4444',width:3.5,curveness:0.14,type:'solid',opacity:.95};
+  if(kind==='caution')return{color:'#f59e0b',width:2.2,curveness:0.14,type:'solid',opacity:.9};
+  if(kind==='myth')return{color:'#3b82f6',width:2,curveness:0.14,type:'dashed',opacity:.9};
+  if(kind==='spoil')return{color:'#9f1239',width:2,curveness:0.1,type:'dashed',opacity:.85};
+  return{color:'#cbd5e1',width:1,curveness:0,type:'dotted',opacity:.8};
+}
+function renderGraph(){
+  if(!KG)return;
+  var links=KG.links.filter(l=>graphMode==='all'?true:(graphMode==='spoil'?l.kind==='spoil':l.kind===graphMode));
+  var keep={};
+  links.forEach(l=>{keep[l.source]=1;keep[l.target]=1;});
+  var nodes=graphMode==='all'?KG.nodes:KG.nodes.filter(n=>keep[n.id]);
+  var linkData=links.map(l=>{
+    var st=kgEdgeStyle(l.kind);
+    return {source:l.source,target:l.target,_l:l,
+      lineStyle:{color:st.color,width:st.width,type:st.type,curveness:st.curveness,opacity:st.opacity}};
+  });
+  if(charts.graph)charts.graph.dispose();
+  charts.graph=echarts.init(document.getElementById('chartGraph'));
+  charts.graph.setOption({
+    tooltip:{backgroundColor:'rgba(255,255,255,.96)',borderColor:'#e2e8f0',textStyle:{color:'#1e293b',fontSize:11},
+      formatter:function(p){
+        if(p.dataType==='node'){
+          var d=p.data._n||{};
+          if(d.kind==='hub')return '<b>'+d.name+'</b>（食材分类枢纽）<br/>点击查看分类下食材';
+          if(d.kind==='hazard')return '<b>变质危害：'+d.name+'</b><br/>点击查看关联食材';
+          return '<b>'+d.name+'</b><br/>分类：'+(d.cat||'')+'<br/>点击查看搭配风险与变质关系';
+        }
+        var l=p.data._l;
+        if(l.kind==='member')return '食材分类归属关系';
+        if(l.kind==='spoil')return '<b>'+l.food+' → 易发生「'+l.hazard+'」</b><br/>'+l.label;
+        var lv={danger:'🔴 高风险 · 不建议同食',caution:'🟡 需注意 · 特定人群',myth:'🔵 谣言 · 已科学辟谣'}[l.kind];
+        return '<b>'+l.source+' × '+l.target+'</b><br/>'+lv+'<br/>📌 '+l.title;
+      }},
+    series:[{
+      type:'graph',layout:'force',roam:true,draggable:true,
+      categories:KG_CATS.map(c=>({name:c.name})),
+      data:nodes.map(n=>({name:n.id,value:n.name,category:KG_CATS.findIndex(c=>c.name===n.cat),
+        symbolSize:n.symbolSize,itemStyle:n.itemStyle,
+        label:Object.assign({},n.label,{formatter:n.name}),_n:n})),
+      links:linkData,
+      force:{repulsion:340,edgeLength:[45,130],gravity:0.12,friction:0.3},
+      label:{show:true},
+      emphasis:{focus:'adjacency',lineStyle:{width:4.5},label:{fontWeight:'bold'}}
+    }]
+  });
+  charts.graph.off('click');
+  charts.graph.on('click',function(p){
+    if(p.dataType!=='node')return;
+    var d=p.data._n,html='';
+    if(d.kind==='food'){
+      var rel=PAIRS.filter(x=>x.a===d.name||x.b===d.name);
+      var sp=SPOIL_LINKS.filter(s=>s.food===d.name);
+      html='<div class="font-semibold text-emerald-700 mb-1.5"><i class="ri-restaurant-2-line"></i> '+d.name+' <span class="text-slate-400 font-normal">'+d.cat+'</span></div>';
+      html+='<div class="font-semibold text-slate-700 mb-1">搭配风险条目（'+rel.length+'）</div>';
+      html+=rel.length?rel.map(x=>{
+        var other=x.a===d.name?x.b:x.a;
+        var ic={danger:'🔴',caution:'🟡',myth:'🔵'}[x.level];
+        return '<div class="mb-1 leading-relaxed">'+ic+' 与<b>'+other+'</b>：'+x.title+'</div>';
+      }).join(''):'<div class="text-slate-400 mb-1">暂无收录</div>';
+      if(sp.length)html+='<div class="mt-1.5 pt-1.5 border-t border-emerald-100 font-semibold text-rose-700">易变质：'+sp.map(s=>'「'+s.hazard+'」'+s.label).join('；')+'</div>';
+    }else if(d.kind==='hazard'){
+      var foods=SPOIL_LINKS.filter(s=>('hz_'+s.hazard)===d.id);
+      html='<div class="font-semibold text-rose-700 mb-1.5"><i class="ri-bug-line"></i> 变质危害：'+d.name+'</div>'+
+        foods.map(f=>'<div class="mb-1"><b>'+f.food+'</b>：'+f.label+'</div>').join('');
+    }else{
+      var members=KG.nodes.filter(n=>n.cat===d.cat&&n.kind==='food');
+      html='<div class="font-semibold text-emerald-700 mb-1.5"><i class="ri-folder-line"></i> '+d.name+'分类</div>'+
+        '<div class="leading-relaxed">包含 '+members.length+' 种图谱食材：'+members.map(m=>m.name).join('、')+'</div>';
+    }
+    document.getElementById('kgDetail').innerHTML=html;
+  });
+}
+function setGraphMode(m,btn){
+  graphMode=m;
+  document.querySelectorAll('.gfilter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGraph();
+}
+
+/* ============================================================
+   2. AI 智能体
+   ============================================================ */
+var SUGGESTIONS=['草莓发霉了还能吃吗？','柿子和螃蟹能一起吃吗？','虾和维生素C同食会中毒吗？','牛肉可以放几天？','检测一下我买的草莓','牛奶保质期多久？怎么保存？'];
+function renderChips(){
+  document.getElementById('chips').innerHTML=SUGGESTIONS.map(s=>'<span class="chip" onclick="quickAsk(\''+s+'\')">'+s+'</span>').join('');
+}
+function renderQaLog(){
+  document.getElementById('qaLog').innerHTML = DATA.qaLog.length?
+    DATA.qaLog.slice(0,8).map(q=>'<div class="log-line"><i class="ri-question-answer-line text-slate-300"></i> '+q+'</div>').join('')
+    :'<div class="text-[11px] text-slate-400">暂无记录</div>';
+}
+function addMsg(html, who){
+  var box=document.getElementById('chatBox');
+  var d=document.createElement('div');d.className='chat-msg '+(who==='user'?'chat-user':'chat-bot');d.innerHTML=html;
+  box.appendChild(d);box.scrollTop=box.scrollHeight;
+  return d;
+}
+function botTyping(){
+  var box=document.getElementById('chatBox');
+  var d=document.createElement('div');d.className='chat-msg chat-bot typing';d.id='typing';
+  d.innerHTML='<span></span><span></span><span></span>';box.appendChild(d);box.scrollTop=box.scrollHeight;
+}
+function stopTyping(){var t=document.getElementById('typing');if(t)t.remove();}
+function quickAsk(q){document.getElementById('chatInput').value=q;sendChat();}
+function clearChat(){document.getElementById('chatBox').innerHTML='';welcomeChat();}
+function welcomeChat(){
+  addMsg('您好！我是<b>食安 AI 智能体</b> 🛡️<br>我可以帮您：<br>① <b>智能变质检查</b>：输入“检测 + 食材名”或点击 📷 模拟拍照识别；<br>② <b>同食风险筛查</b>：如“柿子和螃蟹能一起吃吗？”；<br>③ <b>变质档案问答</b>：保质期、储存方法、变质特征；<br>④ <b>谣言辟谣</b>：辨别网络“食物相克”传言。<br>有什么食品安全问题，直接问我吧！','bot');
+}
+
+/* --- 食材/条目名称识别 --- */
+var NAME_MAP={};
+INGREDIENTS.forEach(ing=>{NAME_MAP[ing.name]=ing; (ing.aliases||[]).forEach(a=>NAME_MAP[a]=ing)});
+['啤酒','白酒','浓茶','咖啡','维生素C','糖精','芝麻','蜂蜜','橙子','大蒜','栗子','巧克力','皮蛋','红糖'].forEach(n=>{
+  if(!NAME_MAP[n]) NAME_MAP[n]={name:n,aliases:[]};
+});
+function extractItems(text){
+  var found=[];
+  Object.keys(NAME_MAP).sort((a,b)=>b.length-a.length).forEach(name=>{
+    if(text.indexOf(name)>=0){
+      var ing=NAME_MAP[name];
+      if(!found.find(f=>f.name===ing.name)) found.push(ing);
+    }
+  });
+  return found;
+}
+function findPair(a,b){
+  return PAIRS.find(p=>(p.a===a&&p.b===b)||(p.a===b&&p.b===a));
+}
+
+/* --- AI 检测模拟 --- */
+function mockDetect(ingName){
+  var ing=NAME_MAP[ingName];
+  if(!ing||!ing.id) ing=INGREDIENTS[0];
+  var seed=(new Date().toDateString()+ing.name).split('').reduce((s,c)=>s+c.charCodeAt(0),0);
+  var r=mulberry32(seed)();
+  var grade=r<0.45?'优质':r<0.75?'良好':r<0.9?'轻度变质':'严重变质';
+  var conf=grade==='严重变质'?90+Math.floor(r*8):82+Math.floor(r*15);
+  var sign=grade==='优质'?ing.early[0]:grade==='良好'?ing.early[Math.floor(r*ing.early.length)]:grade==='轻度变质'?ing.mid[Math.floor(r*ing.mid.length)]:ing.late[Math.floor(r*ing.late.length)];
+  var color=grade==='优质'?'#16a34a':grade==='良好'?'#2563eb':grade==='轻度变质'?'#d97706':'#dc2626';
+  var html='<div class="rounded-xl border-2 overflow-hidden" style="border-color:'+color+'33;border-collapse:collapse">'+
+    '<div class="px-3 py-2 text-white text-xs font-semibold flex items-center gap-2" style="background:'+color+'"><i class="ri-camera-2-fill"></i> AI 图像识别报告 · '+ing.name+'</div>'+
+    '<div class="p-3 space-y-1.5 text-xs">'+
+    '<div class="flex justify-between"><span class="text-slate-500">安全评级</span><b style="color:'+color+'">'+grade+'</b></div>'+
+    '<div class="flex justify-between"><span class="text-slate-500">识别置信度</span><b>'+conf+'%</b></div>'+
+    '<div class="flex justify-between"><span class="text-slate-500">检出特征</span><span class="text-right max-w-[65%]">'+sign+'</span></div>'+
+    '<div class="flex justify-between"><span class="text-slate-500">建议措施</span><span class="text-right max-w-[65%]">'+GRADE_ADVICE[grade]+'</span></div>'+
+    (ing.warn?'<div class="mt-1 p-2 rounded bg-red-50 text-red-600 font-semibold">'+ing.warn+'</div>':'')+
+    '</div></div>';
+  return {html,grade:grade};
+}
+
+/* --- 主问答逻辑 --- */
+function sendChat(){
+  var inp=document.getElementById('chatInput');
+  var text=inp.value.trim(); if(!text) return;
+  inp.value=''; addMsg(text,'user');
+  DATA.qaCount++; DATA.qaLog.unshift(text.length>18?text.slice(0,18)+'…':text); DATA.qaLog=DATA.qaLog.slice(0,20); save();
+  renderQaLog(); renderStats();
+  botTyping();
+  setTimeout(()=>{ stopTyping(); addMsg(answer(text),'bot'); }, 600+Math.random()*500);
+}
+function answer(text){
+  var items=extractItems(text);
+  // 1 寒暄
+  if(/你好|您好|hi|hello|在吗/i.test(text) && items.length===0)
+    return '您好！我是食安 AI 智能体 🛡️ 可以问我食材变质、搭配禁忌、保质期等问题，试试点击下方快捷提问～';
+  if(/谢谢|感谢|thanks/i.test(text)) return '不客气！饮食安全无小事，有问题随时问我 🍎';
+  if(/帮助|能做什么|功能|会什么|help/i.test(text))
+    return '我能帮您做四件事：<br>① <b>智能变质检查</b>：发送“检测 + 食材名”或点 📷 模拟拍照；<br>② <b>同食风险筛查</b>：告诉我两种/多种食材，我逐一排查；<br>③ <b>变质档案</b>：食材能放几天、怎么存、坏了什么样；<br>④ <b>谣言辟谣</b>：识别“食物相克”类网络传言。';
+  // 2 拍照检测
+  if(/检测|拍照|识别|照片|图片|帮我看/.test(text)){
+    if(items.length===0) return '请告诉我要检测的食材，例如“检测一下草莓”，或点击左下角 📷 按钮选择食材模拟拍照识别。';
+    var ing=items[0];
+    var r=mockDetect(ing.name);
+    // 严重/轻度结果自动入台账
+    if(r.grade!=='优质'&&r.grade!=='良好'){
+      var d=new Date();
+      DATA.records.unshift({id:Date.now(),time:fmtDate(d),ingredient:ing.name,cat:ing.cat||'—',type:r.grade==='严重变质'?'霉变':'腐烂软化',
+        grade:r.grade,confidence:85+Math.floor(Math.random()*12),temp:'待补录',humidity:'待补录',days:0,
+        signs:'AI聊天端拍照识别（模拟）',advice:GRADE_ADVICE[r.grade],source:'小程序拍照识别'});
+      save();
+    }
+    return r.html + '<div class="text-[11px] text-slate-400 mt-1.5">※ 演示环境为模拟识别；正式版由部署的图像识别模型返回结果，异常记录已自动同步至「变质检测记录」台账。</div>';
+  }
+  // 3 辟谣
+  if(/辟谣|谣言|真的假的|真的吗|是不是真的|网传|听说/.test(text)){
+    var hit=PAIRS.filter(p=>p.level==='myth' && items.find(i=>i.name===p.a||i.name===p.b));
+    if(items.length>=2){
+      var direct=findPair(items[0].name,items[1].name);
+      if(direct&&direct.level==='myth') hit=[direct];
+    }
+    if(hit.length){
+      return hit.slice(0,2).map(p=>pairCard(p)).join('')+'<div class="text-[11px] text-slate-400 mt-1">我已收录 '+PAIRS.filter(x=>x.level==='myth').length+' 条同类辟谣，可在「搭配禁忌库」查看全部。</div>';
+    }
+    return '请把听到的说法告诉我，例如“虾和维生素C同食会中毒是真的吗？”，我会基于权威文献帮您核实。已辟谣的常见谣言包括：虾+维C、鸡蛋+糖精、洋葱+蜂蜜、鸡肉+芝麻、土豆+鸡蛋等。';
+  }
+  // 4 同食搭配
+  if(/一起吃|同食|同吃|相克|搭配|能不能.*吃|可以.*吃吗|冲突|禁忌|配/.test(text) || items.length>=2){
+    if(items.length<2){
+      var only=items[0];
+      if(only) return '您想查询 <b>'+only.name+'</b> 和哪种食材的搭配？再告诉我一种食材即可，例如“'+only.name+'和螃蟹能一起吃吗？”';
+      return '请告诉我两种或多种食材，例如“柿子、螃蟹、红薯能不能一起吃？”，我会逐一排查所有组合。';
+    }
+    return screenHtml(items.map(i=>i.name), true);
+  }
+  // 5 变质判别
+  if(/变质|坏了|坏掉|发霉|霉变|腐烂|还能吃|能吃吗|酸了|臭了|烂了|新鲜不|还能不能/.test(text)){
+    if(!items.length) return '请告诉我具体食材，例如“草莓发霉了还能吃吗？”，我会给出变质特征判别和处置建议。';
+    var ing2=items[0];
+    if(!ing2.id) return ing2.name+' 的变质档案暂未收录，请换一种常见食材试试～';
+    return spoilCard(ing2);
+  }
+  // 6 保质期/储存
+  if(/保质期|放多久|保存|储存|冷藏|冰箱|存放|放几天|怎么放/.test(text)){
+    if(!items.length) return '请告诉我食材名称，例如“牛肉可以放几天？”，我会告诉您常温/冷藏期限和正确储存方法。';
+    var ing3=items[0];
+    if(!ing3.id) return ing3.name+' 的储存档案暂未收录～';
+    return '<div class="rounded-xl border border-sky-200 overflow-hidden"><div class="px-3 py-2 bg-sky-50 text-sky-700 text-xs font-semibold"><i class="ri-time-line"></i> '+ing3.name+' · 保质期与储存</div>'+
+      '<div class="p-3 text-xs space-y-1.5">'+
+      '<div>🕐 <b>常温：</b>'+ing3.room+'　|　🧊 <b>冷藏：</b>'+ing3.fridge+'</div>'+
+      '<div>📦 <b>储存建议：</b>'+ing3.store+'</div>'+
+      (ing3.warn?'<div class="p-2 rounded bg-red-50 text-red-600 font-semibold">'+ing3.warn+'</div>':'')+
+      '</div></div>';
+  }
+  // 兜底
+  if(items.length){
+    var ing4=items[0];
+    if(ing4.id) return spoilCard(ing4)+'<div class="text-[11px] text-slate-400 mt-1.5">您也可以问我：“'+ing4.name+'能放几天？” 或 “'+ing4.name+'和XX能一起吃吗？”</div>';
+  }
+  return '这个问题超出了我的食品安全知识范围～您可以问我：<br>• 食材变质判别（“草莓发霉了还能吃吗？”）<br>• 同食风险（“柿子和螃蟹能一起吃吗？”）<br>• 保质期与储存方法<br>• 网络食物相克谣言核实<br>也可点击下方快捷问题直接体验。';
+}
+function pairCard(p){
+  var c=p.level==='danger'?'border-red-200 bg-red-50/50':p.level==='caution'?'border-amber-200 bg-amber-50/50':'border-blue-200 bg-blue-50/50';
+  return '<div class="rounded-xl border '+c+' p-3 mb-2 text-xs">'+
+    '<div class="flex items-center justify-between mb-1.5"><b>'+p.a+' × '+p.b+'</b>'+levelBadge(p.level)+'</div>'+
+    '<div class="font-semibold text-slate-700 mb-1">📌 '+p.title+'</div>'+
+    '<div class="text-slate-600 mb-1"><b>科学解释：</b>'+p.reason+'</div>'+
+    '<div class="text-slate-600 mb-1"><b>安全建议：</b>'+p.advice+'</div>'+
+    '<div class="text-[10px] text-slate-400">📖 来源：'+p.source+'</div></div>';
+}
+function spoilCard(ing){
+  return '<div class="rounded-xl border border-emerald-200 overflow-hidden"><div class="px-3 py-2 bg-emerald-50 text-emerald-700 text-xs font-semibold"><i class="ri-book-2-line"></i> '+ing.name+' · 变质判别档案</div>'+
+    '<div class="p-3 text-xs space-y-2">'+
+    '<div class="flex gap-4"><span>🕐 常温 <b>'+ing.room+'</b></span><span>🧊 冷藏 <b>'+ing.fridge+'</b></span></div>'+
+    '<div><span class="sign-dot" style="background:#f59e0b"></span><b>早期（尽快食用）：</b>'+ing.early.join('；')+'</div>'+
+    '<div><span class="sign-dot" style="background:#f97316"></span><b>中期（谨慎处理）：</b>'+ing.mid.join('；')+'</div>'+
+    '<div><span class="sign-dot" style="background:#dc2626"></span><b>晚期（禁止食用）：</b>'+ing.late.join('；')+'</div>'+
+    (ing.warn?'<div class="p-2 rounded bg-red-50 text-red-600 font-semibold">'+ing.warn+'</div>':'')+
+    '</div></div>';
+}
+function mockPhoto(){
+  var names=INGREDIENTS.filter(i=>['strawberry','beef','shrimp','spinach','milk','crab'].indexOf(i.id)>=0).map(i=>i.name);
+  var name=names[Math.floor(Math.random()*names.length)];
+  document.getElementById('chatInput').value='检测一下我买的'+name;
+  sendChat();
+}
+
+/* ============================================================
+   3. 同食风险筛查
+   ============================================================ */
+function renderPickList(kw){
+  kw=(kw||'').trim();
+  var cats=['蔬菜','水果','肉禽蛋','水产','奶豆制品','主食/其他'];
+  var html='';
+  cats.forEach(cat=>{
+    var list=INGREDIENTS.filter(i=>i.cat===cat && (!kw||i.name.indexOf(kw)>=0||(i.aliases||[]).some(a=>a.indexOf(kw)>=0)));
+    if(!list.length) return;
+    html+='<div class="w-full text-[11px] text-slate-400 font-semibold mt-1 mb-0.5">'+cat+'</div>';
+    list.forEach(i=>{
+      var sel=DATA.picked.indexOf(i.name)>=0?'sel':'';
+      html+='<span class="ing-tag '+sel+'" onclick="togglePick(\''+i.name+'\')">'+i.name+'</span>';
+    });
+  });
+  // 搭配库中的非档案食材
+  var extras=['啤酒','白酒','浓茶','咖啡','维生素C','糖精','芝麻','蜂蜜','橙子','大蒜','栗子','巧克力','皮蛋','红糖'];
+  var el=extras.filter(n=>!kw||n.indexOf(kw)>=0);
+  if(el.length){
+    html+='<div class="w-full text-[11px] text-slate-400 font-semibold mt-2 mb-0.5">其他常查食物/饮品</div>';
+    el.forEach(n=>{
+      var sel=DATA.picked.indexOf(n)>=0?'sel':'';
+      html+='<span class="ing-tag '+sel+'" onclick="togglePick(\''+n+'\')">'+n+'</span>';
+    });
+  }
+  document.getElementById('pickList').innerHTML=html||'<div class="empty">未找到匹配食材</div>';
+}
+function togglePick(name){
+  var i=DATA.picked.indexOf(name);
+  if(i>=0)DATA.picked.splice(i,1); else if(DATA.picked.length>=8) toast('最多选择 8 种食材'); else DATA.picked.push(name);
+  save();renderPickList(document.querySelector('#view-check input').value);renderPicked();
+}
+function clearPick(){DATA.picked=[];save();renderPickList('');renderPicked();document.getElementById('screenResult').innerHTML='';}
+function renderPicked(){
+  var el=document.getElementById('pickedTags');
+  el.innerHTML=DATA.picked.length?DATA.picked.map(n=>'<span class="badge tag-info" style="font-size:.75rem;padding:.3rem .7rem">'+n+' <i class="ri-close-line cursor-pointer" onclick="togglePick(\''+n+'\')"></i></span>').join(''):'<span class="text-xs text-slate-400">尚未选择食材</span>';
+}
+function runScreen(){
+  if(DATA.picked.length<2){toast('请至少选择 2 种食材');return;}
+  document.getElementById('screenResult').innerHTML=screenHtml(DATA.picked.slice(),false);
+  document.getElementById('screenResult').scrollIntoView({behavior:'smooth'});
+}
+function screenHtml(names, fromChat){
+  var pairs=[],safePairs=[];
+  for(var i=0;i<names.length;i++)for(var j=i+1;j<names.length;j++){
+    var p=findPair(names[i],names[j]);
+    if(p)pairs.push(p); else safePairs.push([names[i],names[j]]);
+  }
+  var danger=pairs.filter(p=>p.level==='danger'),caution=pairs.filter(p=>p.level==='caution'),myth=pairs.filter(p=>p.level==='myth');
+  var banner,bc;
+  if(danger.length){banner='🔴 筛查发现 '+danger.length+' 组高风险搭配，不建议同食！';bc='from-red-500 to-rose-500';}
+  else if(caution.length){banner='🟡 筛查发现 '+caution.length+' 组需注意搭配，特定人群请谨慎';bc='from-amber-500 to-orange-500';}
+  else if(myth.length&&!safePairs.length){banner='🔵 您查询的组合均为已辟谣谣言，不存在科学冲突';bc='from-blue-500 to-sky-500';}
+  else {banner='🟢 筛查完成：未发现真实冲突搭配，可安全同食';bc='from-emerald-500 to-teal-500';}
+  var html='<div class="card mb-4"><div class="rounded-xl bg-gradient-to-r '+bc+' text-white px-4 py-3 font-semibold text-sm flex items-center gap-2">'+
+    '<i class="ri-shield-check-fill text-xl"></i><div>'+banner+'<div class="font-normal text-[11px] opacity-90 mt-0.5">共排查 '+names.length+' 种食材、'+(pairs.length+safePairs.length)+' 组组合 · 数据来源：权威食品安全知识库</div></div></div></div>';
+  if(pairs.length) html+='<div class="card mb-4"><div class="font-semibold text-sm text-slate-800 mb-3"><i class="ri-file-search-line text-emerald-600"></i> 命中知识库的组合（'+pairs.length+' 组）</div>'+pairs.map(pairCard).join('')+'</div>';
+  if(safePairs.length) html+='<div class="card"><div class="font-semibold text-sm text-slate-800 mb-3"><i class="ri-checkbox-circle-line text-emerald-600"></i> 未发现冲突的组合（'+safePairs.length+' 组）</div>'+
+    '<div class="flex flex-wrap gap-2">'+safePairs.map(s=>'<span class="badge tag-safe" style="font-size:.75rem;padding:.35rem .8rem"><i class="ri-check-line"></i> '+s[0]+' + '+s[1]+'</span>').join('')+'</div>'+
+    '<div class="text-[11px] text-slate-400 mt-3">※ 结论基于现有知识库；食材务必新鲜、彻底加热，特殊疾病/过敏体质请遵医嘱。</div></div>';
+  return html;
+}
+
+/* ============================================================
+   4. 变质检测记录
+   ============================================================ */
+var recordFilter={kw:'',grade:'',type:''};
+function renderRecords(){
+  var list=DATA.records.filter(r=>
+    (!recordFilter.kw||r.ingredient.indexOf(recordFilter.kw)>=0||r.signs.indexOf(recordFilter.kw)>=0)&&
+    (!recordFilter.grade||r.grade===recordFilter.grade)&&
+    (!recordFilter.type||r.type===recordFilter.type));
+  document.getElementById('recordCount').textContent='共 '+list.length+' 条记录';
+  document.getElementById('recordTbody').innerHTML=list.length?list.map(r=>
+    '<tr><td class="whitespace-nowrap text-slate-500">'+r.time+'</td>'+
+    '<td><b>'+r.ingredient+'</b><div class="text-[10px] text-slate-400">'+r.cat+'</div></td>'+
+    '<td><span class="badge '+(r.type==='正常'?'tag-safe':'tag-gray')+'">'+r.type+'</span></td>'+
+    '<td>'+gradeBadge(r.grade)+'</td>'+
+    '<td>'+r.confidence+'%</td>'+
+    '<td class="text-xs text-slate-500">'+r.temp+' / '+r.humidity+'<div class="text-[10px] text-slate-400">存放 '+r.days+' 天</div></td>'+
+    '<td class="max-w-[260px]"><div class="text-xs text-slate-600">'+r.signs+'</div><div class="text-[11px] text-slate-400 mt-0.5">→ '+r.advice+'</div></td>'+
+    '<td class="text-xs text-slate-500">'+r.source+'</td>'+
+    '<td><button class="btn btn-danger btn-sm" onclick="delRecord('+r.id+')"><i class="ri-delete-bin-line"></i></button></td></tr>'
+  ).join(''):'<tr><td colspan="9"><div class="empty">暂无符合条件的记录</div></td></tr>';
+}
+function delRecord(id){
+  if(!confirm('确定删除该条记录？'))return;
+  DATA.records=DATA.records.filter(r=>r.id!==id);save();renderRecords();toast('记录已删除');
+}
+function openRecordModal(){
+  var opts=INGREDIENTS.map(i=>i.name).join('');
+  document.getElementById('modalRoot').innerHTML=
+  '<div class="modal-mask" onclick="if(event.target===this)closeModal()"><div class="modal">'+
+    '<div class="flex items-center justify-between mb-4"><h2 class="font-bold text-slate-800"><i class="ri-file-add-line text-emerald-600"></i> 录入变质检测记录</h2><button class="text-slate-400 hover:text-slate-700" onclick="closeModal()"><i class="ri-close-line text-xl"></i></button></div>'+
+    '<div class="grid grid-cols-2 gap-3 text-sm">'+
+      '<label class="col-span-2">食材名称<input class="input mt-1" id="f_name" list="ingList" placeholder="如：草莓"><datalist id="ingList">'+INGREDIENTS.map(i=>'<option value="'+i.name+'">').join('')+'</datalist></label>'+
+      '<label>变质类型<select class="input mt-1" id="f_type">'+SPOIL_TYPES.map(t=>'<option>'+t+'</option>').join('')+'</select></label>'+
+      '<label>新鲜度评级<select class="input mt-1" id="f_grade" onchange="document.getElementById(\'f_advice\').value=GRADE_ADVICE[this.value]">'+GRADES.map(g=>'<option>'+g+'</option>').join('')+'</select></label>'+
+      '<label>AI 置信度（%）<input class="input mt-1" id="f_conf" type="number" min="50" max="99" value="90"></label>'+
+      '<label>存放天数<input class="input mt-1" id="f_days" type="number" min="0" value="2"></label>'+
+      '<label>存放温度<input class="input mt-1" id="f_temp" placeholder="如：4℃ 或 常温"></label>'+
+      '<label>环境湿度<input class="input mt-1" id="f_hum" placeholder="如：70%"></label>'+
+      '<label>来源<select class="input mt-1" id="f_src"><option>小程序拍照识别</option><option>人工抽检录入</option><option>批量快检</option></select></label>'+
+      '<label class="col-span-2">变质特征描述<input class="input mt-1" id="f_signs" placeholder="如：表面白色绒毛霉、果实渗汁酸臭"></label>'+
+      '<label class="col-span-2">处置建议<input class="input mt-1" id="f_advice" value="'+GRADE_ADVICE['优质']+'"></label>'+
+    '</div>'+
+    '<div class="flex justify-end gap-2 mt-5"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveRecord()"><i class="ri-save-line"></i> 保存记录</button></div>'+
+  '</div></div>';
+}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+function saveRecord(){
+  var name=document.getElementById('f_name').value.trim();
+  if(!name){toast('请填写食材名称');return;}
+  var grade=document.getElementById('f_grade').value;
+  var ing=INGREDIENTS.find(i=>i.name===name);
+  DATA.records.unshift({id:Date.now(),time:fmtDate(new Date()),ingredient:name,cat:ing?ing.cat:'—',
+    type:document.getElementById('f_type').value,grade:grade,
+    confidence:+document.getElementById('f_conf').value||90,
+    temp:document.getElementById('f_temp').value.trim()||'待补录',
+    humidity:document.getElementById('f_hum').value.trim()||'待补录',
+    days:+document.getElementById('f_days').value||0,
+    signs:document.getElementById('f_signs').value.trim()||'—',
+    advice:document.getElementById('f_advice').value.trim()||GRADE_ADVICE[grade],
+    source:document.getElementById('f_src').value});
+  if(grade==='严重变质'){
+    DATA.warnings.unshift({id:Date.now(),time:fmtDate(new Date()),level:'高',type:'严重变质预警',content:'人工录入「'+name+'」严重变质记录，建议立即排查同批次食材',status:'待处理'});
+  }
+  save();closeModal();renderRecords();toast('记录已保存并同步台账');
+}
+
+/* ============================================================
+   5. 预警中心
+   ============================================================ */
+function renderWarnings(){
+  var w=DATA.warnings;
+  document.getElementById('wOpen').textContent=w.filter(x=>x.status==='待处理').length;
+  document.getElementById('wDone').textContent=w.filter(x=>x.status==='已处理').length;
+  document.getElementById('wHigh').textContent=w.filter(x=>x.level==='高').length;
+  document.getElementById('warnTbody').innerHTML=w.map(x=>{
+    var lc=x.level==='高'?'tag-danger':x.level==='中'?'tag-caution':'tag-info';
+    var sc=x.status==='待处理'?'tag-caution':'tag-safe';
+    return '<tr><td class="whitespace-nowrap text-slate-500">'+x.time+'</td>'+
+      '<td><span class="badge '+lc+'">'+x.level+'风险</span></td>'+
+      '<td><b>'+x.type+'</b></td>'+
+      '<td class="max-w-[420px] text-xs text-slate-600">'+x.content+'</td>'+
+      '<td><span class="badge '+sc+'">'+x.status+'</span></td>'+
+      '<td>'+(x.status==='待处理'?'<button class="btn btn-primary btn-sm" onclick="handleWarn('+x.id+')"><i class="ri-check-line"></i> 标记处理</button>':'<span class="text-xs text-slate-400">已闭环</span>')+'</td></tr>';
+  }).join('');
+}
+function handleWarn(id){
+  var w=DATA.warnings.find(x=>x.id===id);if(w){w.status='已处理';save();renderWarnings();toast('预警已处理闭环');}
+}
+
+/* ============================================================
+   6. 变质档案库
+   ============================================================ */
+function renderArchive(kw){
+  kw=(kw||'').trim();
+  var cat=document.getElementById('archiveCat')?document.getElementById('archiveCat').value:'';
+  var list=INGREDIENTS.filter(i=>(!kw||i.name.indexOf(kw)>=0||(i.aliases||[]).some(a=>a.indexOf(kw)>=0))&&(!cat||i.cat===cat));
+  document.getElementById('archCount').textContent=INGREDIENTS.length;
+  document.getElementById('archiveGrid').innerHTML=list.length?list.map(i=>
+    '<div class="card">'+
+      '<div class="flex items-center justify-between mb-2">'+
+        '<div class="flex items-center gap-2"><div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="ri-restaurant-2-fill"></i></div>'+
+        '<div><b class="text-slate-800 text-sm">'+i.name+'</b><div class="text-[10px] text-slate-400">'+i.cat+'</div></div></div>'+
+        '<div class="text-right text-[11px] text-slate-500">🕐 常温 '+i.room+'<br>🧊 冷藏 '+i.fridge+'</div>'+
+      '</div>'+
+      (i.warn?'<div class="p-2 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold mb-2">'+i.warn+'</div>':'')+
+      '<div class="space-y-1.5 text-[12px]">'+
+        '<div class="flex"><span class="sign-dot" style="background:#f59e0b"></span><span class="text-slate-600"><b class="text-amber-600">早期：</b>'+i.early.join('；')+'</span></div>'+
+        '<div class="flex"><span class="sign-dot" style="background:#f97316"></span><span class="text-slate-600"><b class="text-orange-600">中期：</b>'+i.mid.join('；')+'</span></div>'+
+        '<div class="flex"><span class="sign-dot" style="background:#dc2626"></span><span class="text-slate-600"><b class="text-red-600">晚期：</b>'+i.late.join('；')+'</span></div>'+
+      '</div>'+
+      '<div class="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500"><i class="ri-archive-line"></i> '+i.store+'</div>'+
+    '</div>'
+  ).join(''):'<div class="empty col-span-2">未找到匹配的食材档案</div>';
+}
+
+/* ============================================================
+   7. 搭配禁忌库
+   ============================================================ */
+var pairFilter='';
+function filterPairs(btn,lv){pairFilter=lv;document.querySelectorAll('.pair-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPairs(document.querySelector('#view-pairs input').value);}
+function renderPairs(kw){
+  kw=(kw||'').trim();
+  document.getElementById('pcAll').textContent='('+PAIRS.length+')';
+  var list=PAIRS.filter(p=>(!pairFilter||p.level===pairFilter)&&(!kw||p.a.indexOf(kw)>=0||p.b.indexOf(kw)>=0));
+  document.getElementById('pairGrid').innerHTML=list.length?list.map(p=>
+    '<div class="card">'+
+      '<div class="flex items-center justify-between mb-2">'+
+        '<div class="font-bold text-slate-800 text-sm"><i class="ri-link text-slate-300"></i> '+p.a+' <span class="text-slate-400">×</span> '+p.b+'</div>'+
+        levelBadge(p.level)+
+      '</div>'+
+      '<div class="text-xs font-semibold text-slate-700 mb-1.5">📌 '+p.title+'</div>'+
+      '<div class="text-[12px] text-slate-600 mb-1.5"><b>科学解释：</b>'+p.reason+'</div>'+
+      '<div class="text-[12px] text-slate-600 mb-2"><b>安全建议：</b>'+p.advice+'</div>'+
+      '<div class="text-[10px] text-slate-400 pt-2 border-t border-slate-100">📖 '+p.source+'</div>'+
+    '</div>'
+  ).join(''):'<div class="empty col-span-2">未找到匹配条目</div>';
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+renderNav();
+renderChips();
+renderQaLog();
+welcomeChat();
+showView('dashboard');
+setInterval(()=>{var d=new Date();var p=n=>(n<10?'0':'')+n;
+  document.getElementById('liveTime').textContent=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());},1000);
+</script>
+</body>
+</html>

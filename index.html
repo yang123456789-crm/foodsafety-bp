@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>食安慧眼 · AI食品安全智能检测平台（管理后台）</title>
+<title>安全之视 · AI食品安全智能检测平台（管理后台）</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
@@ -72,7 +72,7 @@
 </head>
 <body class="bg-slate-100">
 <div class="mode-banner mode-banner-demo">
-  <i class="ri-shield-check-line"></i> 食安慧眼演示环境：数据保存在本机浏览器 localStorage，知识库已内置权威食材风险数据，可离线直接演示
+  <i class="ri-shield-check-line"></i> 安全之视演示环境：数据保存在本机浏览器 localStorage，知识库已内置权威食材风险数据，可离线直接演示
 </div>
 
 <div class="flex h-[calc(100vh-30px)] overflow-hidden">
@@ -83,7 +83,7 @@
         <i class="ri-shield-check-fill text-white text-xl"></i>
       </div>
       <div>
-        <div class="text-white font-bold text-base leading-tight">食安慧眼</div>
+        <div class="text-white font-bold text-base leading-tight">安全之视</div>
         <div class="text-slate-400 text-[10px]">AI 食品安全智能检测平台</div>
       </div>
     </div>
@@ -105,7 +105,7 @@
     <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0">
       <div>
         <h1 id="pageTitle" class="text-lg font-bold text-slate-800">数据总览</h1>
-        <p id="pageDesc" class="text-xs text-slate-500">食安慧眼系统核心运营指标</p>
+        <p id="pageDesc" class="text-xs text-slate-500">安全之视系统核心运营指标</p>
       </div>
       <div class="flex items-center gap-3">
         <span class="badge tag-safe"><span class="ai-pulse"></span> AI 引擎在线</span>
@@ -316,7 +316,7 @@
 
 <script>
 /* ============================================================
-   食安慧眼 · 管理后台  —— 数据与知识库（内置权威食品安全数据）
+   安全之视 · 管理后台  —— 数据与知识库（内置权威食品安全数据）
    ============================================================ */
 var STORE_KEY = 'food_safety_admin_v1';
 
@@ -661,7 +661,7 @@ function resetData(){
    ============================================================ */
 var NAV = [
  {sec:'运营总览'},
- {id:'dashboard',icon:'ri-dashboard-line',t:'数据总览',d:'食安慧眼系统核心运营指标'},
+ {id:'dashboard',icon:'ri-dashboard-line',t:'数据总览',d:'安全之视系统核心运营指标'},
  {sec:'AI 中心'},
  {id:'ai',icon:'ri-robot-2-line',t:'AI 智能体',d:'智能变质检查与食品安全问答'},
  {sec:'智能工具'},
